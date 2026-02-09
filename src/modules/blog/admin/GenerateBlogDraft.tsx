@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/core/auth/supabase';
 import { createDraft } from "@/modules/blog/lib/blogsApi";
+import { getFunctionsBaseUrl } from '@/modules/exam/lib/functionsUrl';
 import { ChevronDown, X, Plus, FileText, ExternalLink, History } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -539,7 +540,7 @@ export default function GenerateBlogDraft() {
         if (assignError) throw assignError;
         
         // Create assignment in blog_review_assignments table
-        const response = await fetch(`https://cgtvvpzrzwyvsbavboxa.functions.supabase.co/blogs-api/api/blogs/${draftId}/assign`, {
+        const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/${draftId}/assign`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

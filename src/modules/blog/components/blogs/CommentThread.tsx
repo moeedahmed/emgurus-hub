@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { supabase } from '@/core/auth/supabase';
+import { getFunctionsBaseUrl } from '@/modules/exam/lib/functionsUrl';
 import { useAuth } from '@/modules/career/contexts/AuthContext';
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 
@@ -53,7 +54,7 @@ export default function CommentThread({
   const loadComments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/functions/v1/blogs-api/api/blogs/${postId}/comments`, {
+      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/${postId}/comments`, {
         headers: {
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
           'Content-Type': 'application/json'
@@ -110,7 +111,7 @@ export default function CommentThread({
     
     try {
       setBusy(true);
-      const response = await fetch(`/functions/v1/blogs-api/api/blogs/${postId}/comment`, {
+      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/${postId}/comment`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
@@ -147,7 +148,7 @@ export default function CommentThread({
     setDeletingIds(prev => new Set([...prev, commentId]));
     
     try {
-      const response = await fetch(`/functions/v1/blogs-api/api/blogs/comments/${commentId}`, {
+      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
@@ -183,7 +184,7 @@ export default function CommentThread({
     setReactingIds(prev => new Set([...prev, commentId]));
 
     try {
-      const response = await fetch(`/functions/v1/blogs-api/api/blogs/comments/${commentId}/react`, {
+      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/comments/${commentId}/react`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
@@ -220,7 +221,7 @@ export default function CommentThread({
         ? feedbackText.trim() 
         : `${feedbackReason}${feedbackText.trim() ? `: ${feedbackText.trim()}` : ""}`;
 
-      const response = await fetch(`/functions/v1/blogs-api/api/blogs/comments/${feedbackModal.commentId}/react`, {
+      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/comments/${feedbackModal.commentId}/react`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
