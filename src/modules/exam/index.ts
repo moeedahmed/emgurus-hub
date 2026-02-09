@@ -1,2 +1,1 @@
-// Exam Guru module — will be ported from emgurus project
-export {};
+export { ExamRoutes } from './ExamRoutes';
