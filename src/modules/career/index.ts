@@ -1,2 +1,2 @@
-// Career Guru module — will be ported from career-guru project
-export {};
+// Career Guru module — main export
+export { CareerRoutes } from './CareerRoutes';
