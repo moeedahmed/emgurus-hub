@@ -71,7 +71,7 @@ const SPECIALTIES = [
 const TOTAL_STEPS = 4;
 
 export function Onboarding() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
@@ -105,6 +105,7 @@ export function Onboarding() {
       }, { onConflict: 'id' });
 
       if (error) throw error;
+      await refreshProfile();
       navigate('/hub', { replace: true });
     } catch (err) {
       console.error('Onboarding save failed:', err);
