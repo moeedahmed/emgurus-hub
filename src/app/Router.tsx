@@ -8,6 +8,7 @@ import { Onboarding } from '@/app/pages/Onboarding';
 import { HubDashboard } from '@/app/pages/HubDashboard';
 import { CareerRoutes } from '@/modules/career';
 import { ExamRoutes } from '@/modules/exam';
+import { BlogRoutes } from '@/modules/blog';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileLoading } = useAuth();
@@ -75,7 +76,7 @@ export function AppRouter() {
           <Route path="/hub" element={<HubDashboard />} />
           <Route path="/career/*" element={<CareerRoutes />} />
           <Route path="/exam/*" element={<ExamRoutes />} />
-          <Route path="/blog/*" element={<ComingSoon module="Blog" />} />
+          <Route path="/blog/*" element={<BlogRoutes />} />
           <Route path="/profile" element={<ComingSoon module="Profile" />} />
         </Route>
 

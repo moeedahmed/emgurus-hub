@@ -1,2 +1,1 @@
-// Blog module — will be ported from emgurus project
-export {};
+export { BlogRoutes } from './BlogRoutes';
