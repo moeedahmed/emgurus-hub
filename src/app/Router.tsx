@@ -4,12 +4,13 @@ import { HubLayout } from '@/core/layouts/HubLayout';
 import { Landing } from '@/app/pages/Landing';
 import { Login } from '@/app/pages/Login';
 import { SignUp } from '@/app/pages/SignUp';
+import { Onboarding } from '@/app/pages/Onboarding';
 import { HubDashboard } from '@/app/pages/HubDashboard';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading, profileLoading } = useAuth();
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -18,6 +19,33 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // Redirect to onboarding if not completed
+  if (!profile?.hub_onboarding_completed) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function OnboardingRoute({ children }: { children: React.ReactNode }) {
+  const { user, profile, loading, profileLoading } = useAuth();
+
+  if (loading || profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  // If already onboarded, skip to hub
+  if (profile?.hub_onboarding_completed) {
+    return <Navigate to="/hub" replace />;
+  }
+
   return <>{children}</>;
 }
 
@@ -36,6 +64,9 @@ export function AppRouter() {
         <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
+
+        {/* Onboarding */}
+        <Route path="/onboarding" element={<OnboardingRoute><Onboarding /></OnboardingRoute>} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute><HubLayout /></ProtectedRoute>}>

@@ -72,8 +72,8 @@ const modules = [
 ];
 
 export function HubDashboard() {
-  const { user } = useAuth();
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'Doctor';
+  const { profile } = useAuth();
+  const firstName = profile?.display_name || 'Doctor';
 
   return (
     <div className="space-y-8">
