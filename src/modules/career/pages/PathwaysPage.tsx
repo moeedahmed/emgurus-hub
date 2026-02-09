@@ -103,7 +103,7 @@ const PathwaysPage = () => {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate('/profile')}
+                                onClick={() => navigate('/career/profile')}
                                 className="md:h-10 md:px-4"
                             >
                                 <Settings className="w-4 h-4" />
@@ -140,7 +140,7 @@ const PathwaysPage = () => {
                                 <Sparkles className="w-4 h-4" />
                                 Start Pathway Setup
                             </Button>
-                            <Button variant="outline" onClick={() => navigate('/profile')}>
+                            <Button variant="outline" onClick={() => navigate('/career/profile')}>
                                 Or edit profile manually
                             </Button>
                         </div>

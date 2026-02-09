@@ -43,7 +43,7 @@ const MilestoneValidationPage = () => {
 
   // Redirect non-admins
   if (!isAdminLoading && !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/career" replace />;
   }
 
   const handleExportSQL = () => {

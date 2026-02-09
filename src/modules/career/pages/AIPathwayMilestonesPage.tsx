@@ -120,7 +120,7 @@ const AIPathwayMilestonesPage = () => {
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
             <AlertCircle className="w-12 h-12 text-muted-foreground" />
             <p className="text-lg text-muted-foreground">Pathway not found</p>
-            <Button onClick={() => navigate('/pathways')} variant="outline">
+            <Button onClick={() => navigate('/career/pathways')} variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pathways
             </Button>
@@ -144,7 +144,7 @@ const AIPathwayMilestonesPage = () => {
             }
             description={currentPathway.pathway_description || undefined}
             action={
-              <Button onClick={() => navigate('/pathways')} variant="outline" size="sm">
+              <Button onClick={() => navigate('/career/pathways')} variant="outline" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>

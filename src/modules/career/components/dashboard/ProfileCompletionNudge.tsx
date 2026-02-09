@@ -80,7 +80,7 @@ export function ProfileCompletionNudge({ completion }: ProfileCompletionNudgePro
               </div>
 
               <Button size="sm" asChild>
-                <Link to="/profile">
+                <Link to="/career/profile">
                   Complete profile
                   <ArrowRight className="w-3 h-3 ml-1" />
                 </Link>

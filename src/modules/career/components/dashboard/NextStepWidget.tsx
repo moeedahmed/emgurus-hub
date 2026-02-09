@@ -148,9 +148,9 @@ export function NextStepWidget({ className, goals: propGoals, isLoading: propLoa
     // Determine Primary Action
     const handlePrimaryAction = () => {
         if (nextStep) {
-            navigate(`/roadmap/${nextStep.goal_id}`);
+            navigate(`/career/roadmap/${nextStep.goal_id}`);
         } else {
-            navigate('/goals');
+            navigate('/career/goals');
         }
     };
 

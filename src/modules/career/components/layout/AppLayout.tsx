@@ -34,10 +34,10 @@ interface AppLayoutProps {
 }
 
 const baseNavItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: TrendingUp, label: 'Pathways', path: '/pathways' },
-  { icon: Target, label: 'Goals', path: '/goals' },
-  { icon: User, label: 'Profile', path: '/profile' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/career' },
+  { icon: TrendingUp, label: 'Pathways', path: '/career/pathways' },
+  { icon: Target, label: 'Goals', path: '/career/goals' },
+  { icon: User, label: 'Profile', path: '/career/profile' },
 ];
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
@@ -57,7 +57,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const navItems = useMemo(() => {
     const items = [...baseNavItems];
     if (isAdmin) {
-      items.push({ icon: Settings, label: 'Admin', path: '/admin' });
+      items.push({ icon: Settings, label: 'Admin', path: '/career/admin' });
     }
     return items;
   }, [isAdmin]);
@@ -91,11 +91,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-border/50 shrink-0">
-          <Link to="/dashboard" className="flex items-center gap-2">
+          <Link to="/career" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0">
               <span className="text-primary-foreground font-display font-bold text-base">EM</span>
             </div>
-            {sidebarOpen && <span className="font-display font-semibold text-lg whitespace-nowrap">EM Gurus Career</span>}
+            {sidebarOpen && <span className="font-display font-semibold text-lg whitespace-nowrap">EMGurus</span>}
           </Link>
           <Button
             variant="ghost"
@@ -110,7 +110,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         {/* Nav Items - scrollable */}
         <nav className="flex-1 scrollbar-custom p-4 space-y-2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}
@@ -181,11 +181,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-lg border-b border-border/50 z-50 flex items-center justify-between px-4">
-        <Link to="/dashboard" className="flex items-center gap-2">
+        <Link to="/career" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-display font-bold text-sm">EM</span>
           </div>
-          <span className="font-display font-semibold whitespace-nowrap">EM Gurus Career</span>
+          <span className="font-display font-semibold whitespace-nowrap">EMGurus</span>
         </Link>
 
         {/* Avatar dropdown for theme/logout */}
@@ -225,7 +225,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           isAdmin ? "grid-cols-5" : "grid-cols-4"
         )}>
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}

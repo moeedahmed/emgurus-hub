@@ -76,7 +76,7 @@ export function GoalCard({ goal, progress, index, onArchive, onDelete }: GoalCar
         >
             <div
                 className="bg-card border border-border rounded-lg p-4 md:p-5 h-full cursor-pointer group/card transition-all hover:shadow-md hover:-translate-y-0.5"
-                onClick={() => navigate(`/roadmap/${goal.id}`)}
+                onClick={() => navigate(`/career/roadmap/${goal.id}`)}
                 title={goal.title}
             >
                 {/* Header Row: Badge + Actions */}

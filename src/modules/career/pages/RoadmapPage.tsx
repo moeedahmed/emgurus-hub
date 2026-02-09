@@ -421,7 +421,7 @@ const RoadmapPage = () => {
       <div className="min-h-screen bg-background">
         <header className="border-b border-border p-4">
           <div className="container flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/goals')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/career/goals')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="font-display font-semibold">Goal not found</h1>
@@ -429,7 +429,7 @@ const RoadmapPage = () => {
         </header>
         <div className="container py-16 text-center">
           <p className="text-muted-foreground mb-4">This goal doesn't exist or you don't have access to it.</p>
-          <Button onClick={() => navigate('/goals')}><ArrowLeft className="w-4 h-4" />Back to Goals</Button>
+          <Button onClick={() => navigate('/career/goals')}><ArrowLeft className="w-4 h-4" />Back to Goals</Button>
         </div>
       </div>
     );

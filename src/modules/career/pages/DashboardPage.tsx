@@ -117,7 +117,7 @@ const DashboardPage = () => {
               <Target className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-bold tracking-tight">Active Goals</h2>
             </div>
-            <Link to="/goals" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+            <Link to="/career/goals" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
               Manage all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -131,7 +131,7 @@ const DashboardPage = () => {
                     key={goal.id}
                     whileHover={{ y: -2 }}
                     className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary/30 transition-all shadow-sm"
-                    onClick={() => navigate(`/roadmap/${goal.id}`)}
+                    onClick={() => navigate(`/career/roadmap/${goal.id}`)}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <Badge
@@ -201,7 +201,7 @@ const DashboardPage = () => {
                 <div
                   key={activity.nodeId}
                   className="bg-card/50 border border-border rounded-lg p-3 flex items-center gap-3 cursor-pointer hover:border-primary/30 transition-colors"
-                  onClick={() => navigate(`/roadmap/${activity.goalId}`)}
+                  onClick={() => navigate(`/career/roadmap/${activity.goalId}`)}
                 >
                   <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center shrink-0">
                     <CheckCircle className="w-4 h-4 text-success" />

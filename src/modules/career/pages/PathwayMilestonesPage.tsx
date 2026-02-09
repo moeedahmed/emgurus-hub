@@ -264,7 +264,7 @@ const PathwayMilestonesPage = () => {
                         <p className="text-muted-foreground mb-6">
                             This pathway doesn't exist or hasn't been loaded yet.
                         </p>
-                        <Button onClick={() => navigate('/pathways')}>
+                        <Button onClick={() => navigate('/career/pathways')}>
                             <ArrowLeft className="w-4 h-4" />
                             Back to Pathways
                         </Button>

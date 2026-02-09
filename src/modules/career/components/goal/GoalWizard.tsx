@@ -386,7 +386,7 @@ export const GoalWizard = ({ onSuccess, onCancel, initialState }: GoalWizardProp
             toast.success('Roadmap created successfully!');
 
             onSuccess?.();
-            navigate(`/roadmap/${goal.id}`);
+            navigate(`/career/roadmap/${goal.id}`);
 
         } catch (err) {
             console.error('Error creating roadmap:', err);
