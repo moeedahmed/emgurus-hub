@@ -12,12 +12,12 @@ import { toast } from '@/hooks/use-toast';
 import { createDraft, submitPost } from "@/modules/blog/lib/blogsApi";
 import { getErrorMessage } from "@/modules/blog/lib/errors";
 import { supabase } from '@/core/auth/supabase';
-import { Block } from "@/modules/blog/components/blog/editor/BlocksPalette";
-import BlockEditor from "@/modules/blog/components/blog/editor/BlockEditor";
-import { blocksToMarkdown } from "@/modules/blog/components/blog/editor/BlocksToMarkdown";
+import { Block } from "@/modules/blog/components/blogs/editor/BlocksPalette";
+import BlockEditor from "@/modules/blog/components/blogs/editor/BlockEditor";
+import { blocksToMarkdown } from "@/modules/blog/components/blogs/editor/BlocksToMarkdown";
 import AuthGate from "@/modules/blog/components/auth/AuthGate";
 import EmailVerifyBanner from "@/modules/blog/components/auth/EmailVerifyBanner";
-import BlogEditorSidebar from "@/modules/blog/components/blog/editor/BlogEditorSidebar";
+import BlogEditorSidebar from "@/modules/blog/components/blogs/editor/BlogEditorSidebar";
 
 export default function EditorNew() {
   const { user } = useAuth();
