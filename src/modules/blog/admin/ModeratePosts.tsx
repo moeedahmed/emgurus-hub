@@ -241,7 +241,7 @@ const ModeratePosts: React.FC<{ embedded?: boolean; forceView?: 'admin'|'reviewe
                 {view === 'admin' ? (
                   <>
                     <Button asChild variant="secondary">
-                      <Link to={`/blogs/editor/${p.id}`}>Edit</Link>
+                      <Link to={`/blog/editor/${p.id}`}>Edit</Link>
                     </Button>
                     <Button onClick={async () => {
                       try {
@@ -260,7 +260,7 @@ const ModeratePosts: React.FC<{ embedded?: boolean; forceView?: 'admin'|'reviewe
                 ) : (
                   <>
                     <Button asChild variant="secondary">
-                      <Link to={`/blogs/editor/${p.id}`}>Review</Link>
+                      <Link to={`/blog/editor/${p.id}`}>Review</Link>
                     </Button>
                     {!embedded && (
                       <>

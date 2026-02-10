@@ -318,7 +318,7 @@ function AdminBlogQueueContent() {
         render: (post: any) => (
           <div className="flex gap-2">
             <Button asChild variant="secondary" size="sm">
-              <Link to={`/blogs/editor/${post.id}`}>Edit</Link>
+              <Link to={`/blog/editor/${post.id}`}>Edit</Link>
             </Button>
             <Button 
               onClick={() => publishPost(post.id)}
@@ -366,7 +366,7 @@ function AdminBlogQueueContent() {
         render: (post: any) => (
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm">
-              <Link to={`/blogs/editor/${post.id}`}>Review</Link>
+              <Link to={`/blog/editor/${post.id}`}>Review</Link>
             </Button>
             <Button 
               onClick={() => requestChanges(post.id)}
@@ -391,7 +391,7 @@ function AdminBlogQueueContent() {
         header: 'Actions',
         render: (post: any) => (
           <Button asChild variant="outline" size="sm">
-            <Link to={`/blogs/editor/${post.id}`}>Review</Link>
+            <Link to={`/blog/editor/${post.id}`}>Review</Link>
           </Button>
         )
       });

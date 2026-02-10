@@ -223,7 +223,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
           title="Blogs"
           subtitle="Read and share insights from the EM community."
           align="center"
-          ctas={[{ label: "Write Blog", href: "/blogs/editor/new", variant: "default" }]}
+          ctas={[{ label: "Write Blog", href: "/blog/editor/new", variant: "default" }]}
         />
       )}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

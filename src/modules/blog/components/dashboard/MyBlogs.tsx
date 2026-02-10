@@ -66,7 +66,7 @@ export default function MyBlogs({ filter = 'draft' }: MyBlogsProps) {
         { key: 'actions', header: 'Actions', render: (r: any) => (
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm">
-              <a href={`/blogs/editor/${r.id}`}>Edit</a>
+              <a href={`/blog/editor/${r.id}`}>Edit</a>
             </Button>
             <Button
               variant="default"

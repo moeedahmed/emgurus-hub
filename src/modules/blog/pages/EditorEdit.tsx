@@ -14,13 +14,13 @@ import { toast } from '@/hooks/use-toast';
 import { useRoles } from '@/modules/exam/hooks/useRoles';
 import { submitPost, updateDraft } from "@/modules/blog/lib/blogsApi";
 import { isFeatureEnabled } from "@/modules/blog/lib/constants";
-import { Block } from "@/modules/blog/components/blogs/editor/BlocksPalette";
-import BlockEditor from "@/modules/blog/components/blogs/editor/BlockEditor";
-import { blocksToMarkdown, markdownToBlocks } from "@/modules/blog/components/blogs/editor/BlocksToMarkdown";
+import { Block } from "@/modules/blog/components/blog/editor/BlocksPalette";
+import BlockEditor from "@/modules/blog/components/blog/editor/BlockEditor";
+import { blocksToMarkdown, markdownToBlocks } from "@/modules/blog/components/blog/editor/BlocksToMarkdown";
 import AuthGate from "@/modules/blog/components/auth/AuthGate";
 import RoleGate from "@/modules/blog/components/auth/RoleGate";
 import EmailVerifyBanner from "@/modules/blog/components/auth/EmailVerifyBanner";
-import BlogEditorSidebar from "@/modules/blog/components/blogs/editor/BlogEditorSidebar";
+import BlogEditorSidebar from "@/modules/blog/components/blog/editor/BlogEditorSidebar";
 import BlogChat from "@/modules/blog/components/blogs/BlogChat";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
@@ -58,7 +58,7 @@ export default function EditorEdit() {
     if (meta) meta.setAttribute("content", "Edit your draft blog and submit for review.");
     const link = document.createElement("link");
     link.setAttribute("rel", "canonical");
-    link.setAttribute("href", `${window.location.origin}/blogs/editor/${id}`);
+    link.setAttribute("href", `${window.location.origin}/blog/editor/${id}`);
     document.head.appendChild(link);
     return () => { document.head.removeChild(link); };
   }, [id]);
@@ -127,7 +127,7 @@ export default function EditorEdit() {
       await updateDraft(id, { title, content_md: finalContent, category_id: categoryId, tag_slugs, cover_image_url: cover || undefined });
       if (submit) await submitPost(id);
       toast.success(submit ? "Submitted. Thanks — admins will assign a guru reviewer and publish soon." : "Draft updated");
-      navigate("/blogs/dashboard");
+      navigate("/blog");
     } catch (e: any) {
       toast.error(e.message || "Failed to save");
     } finally {

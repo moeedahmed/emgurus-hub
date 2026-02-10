@@ -12,12 +12,12 @@ import { toast } from '@/hooks/use-toast';
 import { createDraft, submitPost } from "@/modules/blog/lib/blogsApi";
 import { getErrorMessage } from "@/modules/blog/lib/errors";
 import { supabase } from '@/core/auth/supabase';
-import { Block } from "@/modules/blog/components/blogs/editor/BlocksPalette";
-import BlockEditor from "@/modules/blog/components/blogs/editor/BlockEditor";
-import { blocksToMarkdown } from "@/modules/blog/components/blogs/editor/BlocksToMarkdown";
+import { Block } from "@/modules/blog/components/blog/editor/BlocksPalette";
+import BlockEditor from "@/modules/blog/components/blog/editor/BlockEditor";
+import { blocksToMarkdown } from "@/modules/blog/components/blog/editor/BlocksToMarkdown";
 import AuthGate from "@/modules/blog/components/auth/AuthGate";
 import EmailVerifyBanner from "@/modules/blog/components/auth/EmailVerifyBanner";
-import BlogEditorSidebar from "@/modules/blog/components/blogs/editor/BlogEditorSidebar";
+import BlogEditorSidebar from "@/modules/blog/components/blog/editor/BlogEditorSidebar";
 
 export default function EditorNew() {
   const { user } = useAuth();
@@ -126,7 +126,7 @@ export default function EditorNew() {
       }
       
       toast.success(submit ? "Submitted for review! Admins will assign a reviewer and publish soon." : "Draft saved successfully");
-      navigate("/blogs/dashboard");
+      navigate("/blog");
     } catch (error: any) {
       const message = getErrorMessage(error, submit ? "Failed to submit post" : "Failed to save draft");
       toast.error(message);
@@ -346,7 +346,7 @@ export default function EditorNew() {
         </div>
       </div>
       
-      <link rel="canonical" href={`${window.location.origin}/blogs/editor/new`} />
+      <link rel="canonical" href={`${window.location.origin}/blog/editor/new`} />
       </main>
     </AuthGate>
   );

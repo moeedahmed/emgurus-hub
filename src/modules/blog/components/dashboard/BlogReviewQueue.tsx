@@ -104,7 +104,7 @@ export default function BlogReviewQueue() {
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={() => window.open(`/blogs/editor/${r.id}`, '_blank')}
+                onClick={() => window.open(`/blog/editor/${r.id}`, '_blank')}
               >
                 Review
               </Button>

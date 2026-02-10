@@ -576,7 +576,7 @@ export default function GenerateBlogDraft() {
       const draftId = await handleSaveDraft();
       if (draftId) {
         // Navigate to editor with the draft ID
-        window.open(`/blogs/editor/${draftId}`, '_blank');
+        window.open(`/blog/editor/${draftId}`, '_blank');
       }
     } catch (error) {
       // Error already handled in handleSaveDraft
