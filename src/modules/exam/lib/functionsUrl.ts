@@ -5,10 +5,17 @@
 import { supabase } from '@/core/auth/supabase';
 
 const envBase = (import.meta as any).env?.VITE_FUNCTIONS_BASE_URL as string | undefined;
-const fallbackBase = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co`;
+const projectIdFromUrl = (() => {
+  const url = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+  const m = url?.match(/^https:\/\/([a-z0-9-]+)\.supabase\.co$/i);
+  return m?.[1];
+})();
+const projectId = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID || projectIdFromUrl;
+const fallbackBase = projectId ? `https://${projectId}.functions.supabase.co` : "";
 
 export function getFunctionsBaseUrl() {
   const base = (envBase && envBase.replace(/\/$/, "")) || fallbackBase;
+  if (!base) throw new Error("Functions base URL is not configured");
   return base;
 }
 
