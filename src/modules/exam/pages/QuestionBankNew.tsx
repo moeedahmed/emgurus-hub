@@ -7,123 +7,64 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from '@/core/auth/supabase';
-
-interface QuestionRow {
-  id: string;
-  stem: string;
-  exam: string;
-  topic: string;
-  difficulty: string;
-  status: string;
-}
+import { listQuestions, listExams, type Question, type Exam } from "@/modules/exam/lib/examApi";
 
 export default function QuestionBankNew() {
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<QuestionRow[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExam, setSelectedExam] = useState("all");
-  const [selectedTopic, setSelectedTopic] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
-  
-  const [examTypes, setExamTypes] = useState<string[]>([]);
-  const [topics, setTopics] = useState<string[]>([]);
-  const [filteredTopics, setFilteredTopics] = useState<string[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
 
   useEffect(() => {
     document.title = "Question Bank | EMGurus";
     let meta = document.querySelector('meta[name="description"]');
-    if (!meta) { 
-      meta = document.createElement('meta'); 
-      meta.setAttribute('name', 'description'); 
-      document.head.appendChild(meta); 
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
     }
     meta.setAttribute('content', 'Browse and manage exam questions in the question bank with advanced filtering and search capabilities.');
-    
-    loadDropdownData();
+
+    loadExams();
     loadQuestions();
   }, []);
 
   useEffect(() => {
     loadQuestions();
-  }, [searchQuery, selectedExam, selectedTopic, selectedLevel]);
+  }, [searchQuery, selectedExam, selectedLevel]);
 
-  useEffect(() => {
-    // Filter topics based on selected exam
-    if (selectedExam && selectedExam !== "all") {
-      supabase
-        .from('curriculum_map')
-        .select('slo_title')
-        .eq('exam_type', selectedExam as any)
-        .then(({ data }) => {
-          if (data) {
-            const uniqueTopics = [...new Set(data.map(item => item.slo_title))];
-            setFilteredTopics(uniqueTopics);
-          }
-        });
-    } else {
-      setFilteredTopics(topics);
-    }
-    
-    // Reset topic when exam changes
-    if (selectedTopic && selectedExam && selectedExam !== "all") {
-      setSelectedTopic("all");
-    }
-  }, [selectedExam, topics]);
-
-  const loadDropdownData = async () => {
+  const loadExams = async () => {
     try {
-      // Load exam types
-      const examTypesData = ['MRCEM_PRIMARY', 'MRCEM_SBA', 'FRCEM_SBA', 'FCPS_PART1', 'FCPS_IMM', 'FCPS_PART2'];
-      setExamTypes(examTypesData);
-
-      // Load all topics
-      const { data: curriculumData } = await supabase
-        .from('curriculum_map')
-        .select('slo_title')
-        .order('slo_title');
-
-      if (curriculumData) {
-        const uniqueTopics = [...new Set(curriculumData.map(item => item.slo_title))];
-        setTopics(uniqueTopics);
-        setFilteredTopics(uniqueTopics);
-      }
-    } catch (error) {
-      console.error('Error loading dropdown data:', error);
+      const { exams: examList } = await listExams();
+      setExams(examList);
+    } catch (e) {
+      console.warn('Failed to load exams', e);
     }
   };
 
   const loadQuestions = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('reviewed_exam_questions')
-        .select('id, stem, exam, topic, difficulty, status')
-        .eq('status', 'approved');
+      const { questions: allQuestions } = await listQuestions({
+        exam_id: selectedExam !== "all" ? selectedExam : undefined,
+        status: 'published',
+        page_size: 1000,
+      });
 
-      // Apply filters
-      if (selectedExam && selectedExam !== "all") {
-        query = query.eq('exam', selectedExam);
-      }
-      if (selectedTopic && selectedTopic !== "all") {
-        query = query.eq('topic', selectedTopic);
-      }
+      // Client-side filtering for search and difficulty
+      let filtered = allQuestions;
       if (selectedLevel && selectedLevel !== "all") {
-        query = query.eq('difficulty', selectedLevel);
+        filtered = filtered.filter(q => q.difficulty_level === selectedLevel);
       }
       if (searchQuery) {
-        query = query.ilike('stem', `%${searchQuery}%`);
+        const lower = searchQuery.toLowerCase();
+        filtered = filtered.filter(q => q.stem.toLowerCase().includes(lower));
       }
 
-      // Sort by exam type (default sort)
-      query = query.order('exam').order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      setQuestions(data || []);
+      setQuestions(filtered);
     } catch (error: any) {
       toast({ title: "Error loading questions", description: error.message });
     } finally {
@@ -134,7 +75,6 @@ export default function QuestionBankNew() {
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedExam("all");
-    setSelectedTopic("all");
     setSelectedLevel("all");
   };
 
@@ -169,25 +109,9 @@ export default function QuestionBankNew() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All exams</SelectItem>
-                  {examTypes.map((exam) => (
-                    <SelectItem key={exam} value={exam}>
-                      {exam.replace('_', ' ')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All topics" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All topics</SelectItem>
-                  {filteredTopics.map((topic) => (
-                    <SelectItem key={topic} value={topic}>
-                      {topic}
+                  {exams.map((ex) => (
+                    <SelectItem key={ex.id} value={ex.id}>
+                      {ex.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -201,18 +125,18 @@ export default function QuestionBankNew() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All levels</SelectItem>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="C1">C1</SelectItem>
+                  <SelectItem value="C2">C2</SelectItem>
+                  <SelectItem value="C3">C3</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={resetFilters}>
-              Reset
-            </Button>
+            <div className="grid gap-2">
+              <Button variant="outline" onClick={resetFilters}>
+                Reset
+              </Button>
+            </div>
           </div>
 
           {/* Questions Table */}
@@ -228,9 +152,8 @@ export default function QuestionBankNew() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Stem</TableHead>
-                    <TableHead>Exam</TableHead>
-                    <TableHead>Topic</TableHead>
                     <TableHead>Level</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -244,23 +167,16 @@ export default function QuestionBankNew() {
                         {truncateText(question.stem)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {question.exam?.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{question.topic || "—"}</TableCell>
-                      <TableCell>
-                        {question.difficulty && (
-                          <Badge 
-                            variant={
-                              question.difficulty === 'easy' ? 'default' : 
-                              question.difficulty === 'medium' ? 'secondary' : 
-                              'destructive'
-                            }
-                          >
-                            {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
+                        {question.difficulty_level && (
+                          <Badge variant="outline">
+                            {question.difficulty_level}
                           </Badge>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {question.status}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}

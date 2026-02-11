@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { listQuestions, type Question } from "@/modules/exam/lib/examApi";
 
 export default function ExamsAttempts() {
   const { user } = useAuth();
@@ -67,12 +68,14 @@ export default function ExamsAttempts() {
       setItems((it as any[]) || []);
       const qids = attempt.question_ids || [];
       if (qids.length && attempt.source !== 'ai_practice') {
-        // Only try to fetch from reviewed_exam_questions for non-AI sessions
-        const { data: qs } = await (supabase as any)
-          .from('reviewed_exam_questions')
-          .select('id, stem, explanation, correct_index, exam, topic')
-          .in('id', qids);
-        setQuestions((qs as any[]) || []);
+        // Fetch question details from examApi
+        try {
+          const { questions: allQs } = await listQuestions({ status: 'published', page_size: 1000 });
+          const matched = allQs.filter((q) => qids.includes(q.id));
+          setQuestions(matched);
+        } catch {
+          setQuestions([]);
+        }
       }
     } catch {}
   };
@@ -131,20 +134,23 @@ export default function ExamsAttempts() {
           ) : (
             <div className="space-y-4 max-h-[70vh] overflow-auto pr-2">
               {items.map((it, idx) => {
-                const q = questions.find(q => q.id === it.question_id);
-                const ck = typeof q?.correct_index === 'number' ? String.fromCharCode(65 + q.correct_index) : it.correct_key;
+                const q = questions.find((qq: any) => qq.id === it.question_id) as Question | undefined;
+                const ck = q?.correct_answer || it.correct_key;
                 const isAI = active?.source === 'ai_practice';
+                const explanationText = q?.per_option_explanations
+                  ? Object.entries(q.per_option_explanations).map(([k, v]) => `${k}: ${v}`).join(' | ')
+                  : '';
                 return (
                   <div key={it.id} className="rounded border p-3">
                     <div className="text-sm font-medium mb-1">
                       {idx+1}. {isAI ? `AI Generated Question (${it.topic || 'General'})` : (q?.stem || '').slice(0,200)}
                     </div>
                     <div className="text-xs text-muted-foreground mb-2">
-                      Your: {it.selected_key} • Correct: {ck} 
+                      Your: {it.selected_key} • Correct: {ck}
                       {isAI && <span className="ml-2 text-primary">• AI Practice</span>}
                     </div>
-                    {q?.explanation && <div className="text-sm text-muted-foreground">{(q.explanation || '').slice(0,240)}…</div>}
-                    {isAI && !q?.explanation && <div className="text-sm text-muted-foreground italic">AI question details not stored for review</div>}
+                    {explanationText && <div className="text-sm text-muted-foreground">{explanationText.slice(0,240)}…</div>}
+                    {isAI && !explanationText && <div className="text-sm text-muted-foreground italic">AI question details not stored for review</div>}
                   </div>
                 );
               })}

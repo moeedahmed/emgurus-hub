@@ -5,6 +5,7 @@ import KpiCard from "@/modules/exam/components/widgets/KpiCard";
 import TrendCard from "@/modules/exam/components/widgets/TrendCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { listQuestions, type Question } from "@/modules/exam/lib/examApi";
 
 export default function ExamsOverview() {
   const { user, loading: userLoading } = useAuth();
@@ -94,11 +95,9 @@ export default function ExamsOverview() {
       try {
         const firstIds = Array.from(new Set(attempts.map(a => (a.question_ids || [])[0]).filter(Boolean)));
         if (!firstIds.length) { setAccByExam([]); return; }
-        const { data: rows } = await (supabase as any)
-          .from('reviewed_exam_questions')
-          .select('id, exam')
-          .in('id', firstIds);
-        const examMap: Record<string,string> = Object.fromEntries(((rows as any[])||[]).map(r => [r.id, r.exam || '—']));
+        // Load published questions and build id→exam_id map
+        const { questions: allQs } = await listQuestions({ status: 'published', page_size: 1000 });
+        const examMap: Record<string,string> = Object.fromEntries(allQs.filter(q => firstIds.includes(q.id)).map(q => [q.id, q.exam_id || '—']));
         const byExam: Record<string, { at: number, correct: number }> = {};
         attempts.forEach(a => {
           const first = (a.question_ids || [])[0];

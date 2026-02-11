@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import QuestionCard from "@/modules/exam/components/exams/QuestionCard";
 import { Progress } from "@/components/ui/progress";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { listQuestions, type Question } from "@/modules/exam/lib/examApi";
 
 const letters = ['A','B','C','D','E'];
 
@@ -18,16 +19,6 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-interface FullQuestion {
-  id: string;
-  stem: string;
-  options: string[];
-  correct_index: number;
-  explanation?: string | null;
-  exam?: string | null;
-  topic?: string | null;
-}
-
 type OptWithIdx = { key: string; text: string; origIndex: number };
 
 export default function ReviewedExamSession() {
@@ -37,7 +28,7 @@ export default function ReviewedExamSession() {
 
   const [idx, setIdx] = useState(0);
   const [order, setOrder] = useState<string[]>([]);
-  const [q, setQ] = useState<FullQuestion | null>(null);
+  const [q, setQ] = useState<Question | null>(null);
   const [selected, setSelected] = useState<string>("");
   const [answers, setAnswers] = useState<{ id: string; selected: string; correct: string; topic?: string | null }[]>([]);
   const [reviewMode, setReviewMode] = useState(false);
@@ -53,9 +44,24 @@ export default function ReviewedExamSession() {
   const loggedRef = useRef(false);
   const [isMember, setIsMember] = useState<boolean>(true);
   const [paywalled, setPaywalled] = useState<boolean>(false);
+  const [allQuestions, setAllQuestions] = useState<Record<string, Question>>({});
 
   useEffect(() => {
     document.title = "Exam Mode • Reviewed Bank";
+  }, []);
+
+  // Load all published questions once for quick lookup
+  useEffect(() => {
+    (async () => {
+      try {
+        const { questions } = await listQuestions({ status: 'published', page_size: 1000 });
+        const map: Record<string, Question> = {};
+        questions.forEach((q) => { map[q.id] = q; });
+        setAllQuestions(map);
+      } catch (e) {
+        console.warn('Failed to preload questions', e);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -67,7 +73,7 @@ export default function ReviewedExamSession() {
   useEffect(() => {
     if (!order.length) return;
     void load(order[idx]);
-  }, [idx, order.join(',')]);
+  }, [idx, order.join(','), allQuestions]);
 
   useEffect(() => {
     (async () => {
@@ -75,7 +81,6 @@ export default function ReviewedExamSession() {
         const { data: { user } } = await supabase.auth.getUser();
         const uid = user?.id;
         if (!uid) {
-          // Guest: simple localStorage cap
           const used = Number(localStorage.getItem('free_reviewed_used') || '0');
           if (used >= 10) setPaywalled(true);
           setIsMember(false);
@@ -97,23 +102,21 @@ export default function ReviewedExamSession() {
     })();
   }, []);
 
-  async function load(id: string) {
-    try {
-      setLoading(true);
-      const { data, error } = await (supabase as any)
-        .from('reviewed_exam_questions')
-        .select('id, stem, options, correct_index, explanation, exam, topic')
-        .eq('id', id)
-        .maybeSingle();
-      if (error) throw error;
-      setQ(data as FullQuestion);
+  function load(id: string) {
+    const cached = allQuestions[id];
+    if (cached) {
+      setQ(cached);
       setSelected(selectionMap[id] || "");
-    } finally { setLoading(false); }
+      setLoading(false);
+    } else {
+      setLoading(true);
+      // Question might not be loaded yet, wait for allQuestions
+    }
   }
 
   useEffect(() => {
     if (!q) { setDispOptions([]); return; }
-    const arr = (q.options || []).map((t, i) => ({ text: t, origIndex: i }));
+    const arr = (q.options || []).map((opt, i) => ({ text: opt.text, origIndex: i }));
     const shuffled = shuffle(arr);
     const mapped: OptWithIdx[] = shuffled.map((o, idx) => ({ key: letters[idx] || String(idx+1), text: o.text, origIndex: o.origIndex }));
     setDispOptions(mapped);
@@ -121,7 +124,9 @@ export default function ReviewedExamSession() {
 
   const correctKey = useMemo(() => {
     if (!q || !dispOptions.length) return letters[0];
-    const pos = dispOptions.findIndex(o => o.origIndex === (q.correct_index ?? 0));
+    // Find which display option corresponds to the correct answer
+    const correctOpt = q.options.findIndex((opt) => opt.key === q.correct_answer);
+    const pos = dispOptions.findIndex(o => o.origIndex === (correctOpt >= 0 ? correctOpt : 0));
     return letters[Math.max(0, pos)];
   }, [q, dispOptions]);
 
@@ -129,12 +134,11 @@ export default function ReviewedExamSession() {
 
   function submit() {
     if (!q || !selected) return;
-    const next = answers.filter(a => a.id !== q.id).concat([{ id: q.id, selected, correct: correctKey, topic: q.topic }]);
+    const next = answers.filter(a => a.id !== q.id).concat([{ id: q.id, selected, correct: correctKey, topic: q.topic_id }]);
     setAnswers(next);
     if (idx < order.length - 1) {
       setIdx(idx + 1);
     } else {
-      // finished or early end: show summary
       setReviewMode(false);
       setEnded(true);
     }
@@ -170,14 +174,13 @@ export default function ReviewedExamSession() {
   const finished = answers.length === order.length;
   const answeredCount = useMemo(() => order.filter((qid) => !!selectionMap[qid]).length, [order, selectionMap]);
 
-  // Timer: count up by default; if limit provided, count down and stop at 0
   const formatMMSS = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
     return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   };
   useEffect(() => {
-    if (ended || finished || timeUp) return; // freeze timer on summary
+    if (ended || finished || timeUp) return;
     const id = window.setInterval(() => {
       setTimeSec((t) => {
         const next = t + 1;
@@ -240,6 +243,10 @@ export default function ReviewedExamSession() {
     })();
   }, [showSummary]);
 
+  const explanation = q?.per_option_explanations
+    ? Object.entries(q.per_option_explanations).map(([k, v]) => `${k}: ${v}`).join('\n')
+    : '';
+
   return (
     <div className="container mx-auto px-4 py-6">
       {paywalled ? (
@@ -270,7 +277,6 @@ export default function ReviewedExamSession() {
                       onSelect={handleSelect}
                       showExplanation={false}
                       explanation={undefined}
-                      source={`${q.exam || ''}${q.topic ? ' • ' + q.topic : ''}`}
                     />
                   )}
                   <div className="flex items-center justify-between">
@@ -408,8 +414,7 @@ export default function ReviewedExamSession() {
                   selectedKey={answers.find(a=>a.id===q.id)?.selected || ''}
                   onSelect={()=>{}}
                   showExplanation={true}
-                  explanation={q.explanation || ''}
-                  source={`${q.exam || ''}${q.topic ? ' • ' + q.topic : ''}`}
+                  explanation={explanation}
                   correctKey={correctKey}
                 />
               )}

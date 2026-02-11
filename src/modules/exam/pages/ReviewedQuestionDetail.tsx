@@ -9,24 +9,11 @@ import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/modules/career/contexts/AuthContext";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-const letters = ['A','B','C','D','E'];
-const FEEDBACK_TAGS = ["Looks good","Wrong answer","Ambiguous","Outdated","Typo"] as const;
+import { listQuestions, flagQuestion, type Question } from "@/modules/exam/lib/examApi";
 
-type SessionRow = {
-  id: string;
-  user_id: string;
-  question_id: string;
-  exam: string;
-  attempts: number;
-  is_flagged: boolean;
-  notes: string | null;
-  last_selected: string | null;
-  is_correct: boolean;
-  time_spent_seconds: number;
-};
+const FEEDBACK_TAGS = ["Looks good","Wrong answer","Ambiguous","Outdated","Typo"] as const;
 
 export default function ReviewedQuestionDetail() {
   const { id } = useParams();
@@ -35,10 +22,9 @@ export default function ReviewedQuestionDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [q, setQ] = useState<any>(null);
+  const [q, setQ] = useState<Question | null>(null);
   const [selectedKey, setSelectedKey] = useState("");
   const [showExplanation, setShowExplanation] = useState(false);
-  const [reviewerName, setReviewerName] = useState<string | null>(null);
   const [timeSpent, setTimeSpent] = useState(0);
   const [notes, setNotes] = useState("");
   const [issueTypes, setIssueTypes] = useState<string[]>([]);
@@ -54,6 +40,7 @@ export default function ReviewedQuestionDetail() {
   const [paywalled, setPaywalled] = useState<boolean>(false);
   const [needsFeedback, setNeedsFeedback] = useState<boolean>(false);
   const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
+  const [allQuestions, setAllQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     document.title = "Practice Mode • EM Gurus";
@@ -86,33 +73,25 @@ export default function ReviewedQuestionDetail() {
     })();
   }, []);
 
+  // Load all published questions once, then pick the current one by id
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        const { data, error } = await (supabase as any)
-          .from('reviewed_exam_questions')
-          .select('*')
-          .eq('id', id)
-          .eq('status', 'approved')
-          .maybeSingle();
-        if (error) throw error;
-        const row = data as any;
-        if (!cancelled) setQ(row);
-        if (row?.reviewer_id) {
-          const { data: g } = await supabase.from('gurus').select('id, name').eq('id', row.reviewer_id).maybeSingle();
-          if (!cancelled) setReviewerName((g as any)?.name || null);
+        const { questions } = await listQuestions({ status: 'published', page_size: 1000 });
+        if (!cancelled) {
+          setAllQuestions(questions);
+          const found = questions.find((item) => item.id === id);
+          setQ(found || null);
         }
-        // Practice mode is ephemeral: do not restore prior selections
         setSelectedKey("");
         setShowExplanation(false);
         setTimeSpent(0);
         setNotes("");
         setIssueTypes([]);
-
       } catch (e) {
-        console.error('Reviewed question fetch failed', e);
+        console.error('Question fetch failed', e);
         if (!cancelled) setQ(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -121,14 +100,25 @@ export default function ReviewedQuestionDetail() {
     return () => { cancelled = true; };
   }, [id, user]);
 
+  // When navigating between questions with cached data, update q from allQuestions
+  useEffect(() => {
+    if (allQuestions.length && id) {
+      const found = allQuestions.find((item) => item.id === id);
+      if (found) {
+        setQ(found);
+        setSelectedKey("");
+        setShowExplanation(false);
+        setNotes("");
+        setIssueTypes([]);
+      }
+    }
+  }, [id, allQuestions]);
 
   const options = useMemo(() => {
-    const arr: string[] = Array.isArray(q?.options) ? q.options : [];
-    return arr.map((text, idx) => ({ key: letters[idx] || String(idx+1), text }));
+    return q?.options || [];
   }, [q]);
 
-  const correctKey = useMemo(() => letters[(q?.correct_index ?? 0)] || 'A', [q]);
-
+  const correctKey = useMemo(() => q?.correct_answer || 'A', [q]);
 
   const totalQuestions = ids.length || 1;
   const answeredCount = useMemo(() => {
@@ -161,14 +151,14 @@ export default function ReviewedQuestionDetail() {
       store[q.id] = {
         last_selected: k,
         is_correct: k === correctKey,
-        topic: q.topic || 'General'
+        topic: q.topic_id || 'General'
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(store));
     } catch {}
     setTimeout(() => { (document.getElementById('practice-feedback-live') as HTMLElement | null)?.focus?.(); }, 0);
   };
 
-const handleToggleTag = (tag: string) => {
+  const handleToggleTag = (tag: string) => {
     setIssueTypes((prev) => {
       const next = prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag];
       if (!isMember && needsFeedback) setFeedbackGiven(next.length > 0);
@@ -184,12 +174,7 @@ const handleToggleTag = (tag: string) => {
     }
     try {
       const comment = customComment ?? ((issueTypes.length ? `[${issueTypes.join(', ')}] ` : '') + (notes || ''));
-      await supabase.from('exam_question_flags').insert({
-        question_id: q.id,
-        question_source: `${q.exam || 'Reviewed'}${q.topic ? ' • ' + q.topic : ''}`,
-        flagged_by: user.id,
-        comment: comment || null,
-      } as any);
+      await flagQuestion({ question_id: q.id, reason: comment || undefined });
       toast({ title: 'Thanks—your feedback was sent' });
       setIssueTypes([]);
       setNotes('');
@@ -211,7 +196,6 @@ const handleToggleTag = (tag: string) => {
     setShowExplanation(false);
     setNotes("");
     setIssueTypes([]);
-    // Only clear the current question from session storage
     try {
       const raw = localStorage.getItem(SESSION_KEY);
       const store = raw ? JSON.parse(raw) : {};
@@ -289,21 +273,16 @@ const handleToggleTag = (tag: string) => {
           .select('id')
           .single();
         if (!attErr && attemptIns?.id) {
-          // Build items from localStorage + fetch correct answers
           const qids = summary.questionIds;
           let store: any = {};
           try { store = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}'); } catch {}
-          const { data: rows } = await (supabase as any)
-            .from('reviewed_exam_questions')
-            .select('id, correct_index, topic')
-            .in('id', qids);
-          const map: Record<string, any> = Object.fromEntries(((rows as any[]) || []).map(r => [r.id, r]));
+          // Build items from localStorage + allQuestions cache
+          const qMap: Record<string, Question> = Object.fromEntries(allQuestions.map(q => [q.id, q]));
           const items = qids.map((qid, idx) => {
             const sel = store?.[qid]?.last_selected || null;
             if (!sel) return null;
-            const ci = map[qid]?.correct_index ?? 0;
-            const ck = letters[ci] || 'A';
-            const t = store?.[qid]?.topic || map[qid]?.topic || null;
+            const ck = qMap[qid]?.correct_answer || 'A';
+            const t = store?.[qid]?.topic || qMap[qid]?.topic_id || null;
             return {
               attempt_id: attemptIns.id,
               user_id: user.id,
@@ -329,20 +308,21 @@ const handleToggleTag = (tag: string) => {
     const prevIdx = Math.max(0, index - 1);
     navigate(`/exams/practice/${ids[prevIdx]}`, { state: { ids, index: prevIdx } });
   };
-const goNext = async () => {
+  const goNext = async () => {
     if (!ids.length) return;
     if (!isMember && needsFeedback && !feedbackGiven) {
       if (issueTypes.length > 0) {
         await sendFeedback();
       } else {
-        return; // block next until feedback is selected
+        return;
       }
     }
-  const nextIdx = Math.min(ids.length - 1, index + 1);
+    const nextIdx = Math.min(ids.length - 1, index + 1);
     navigate(`/exams/practice/${ids[nextIdx]}`, { state: { ids, index: nextIdx } });
   };
 
   // Keyboard shortcuts
+  const letters = ['A','B','C','D','E'];
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key >= '1' && e.key <= '5') {
@@ -358,6 +338,10 @@ const goNext = async () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedKey, showExplanation, ids, index]);
+
+  const explanation = q?.per_option_explanations
+    ? Object.entries(q.per_option_explanations).map(([k, v]) => `${k}: ${v}`).join('\n')
+    : 'No explanation provided.';
 
   return (
      <div className="container mx-auto px-4 py-6">
@@ -417,8 +401,7 @@ const goNext = async () => {
                   selectedKey={selectedKey}
                   onSelect={handleSelect}
                   showExplanation={showExplanation}
-                  explanation={q.explanation || "Explanation: This is a temporary explanation preview. The correct answer is highlighted above."}
-                  source={q.source || undefined}
+                  explanation={explanation}
                   correctKey={correctKey}
                   lockSelection={showExplanation}
                 />
@@ -478,21 +461,15 @@ const goNext = async () => {
                 {showMeta && (
                   <>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {q.exam && <Badge variant="secondary">{q.exam}</Badge>}
-                      {q.topic && <Badge variant="secondary">{q.topic}</Badge>}
-                      {q.subtopic && <Badge variant="outline">{q.subtopic}</Badge>}
-                      {q.difficulty && <Badge variant="outline">{q.difficulty}</Badge>}
-                      {q.reviewed_at && <Badge variant="outline">Reviewed {new Date(q.reviewed_at).toLocaleDateString()}</Badge>}
-                      <a href={q.reviewer_id ? `/profile/${q.reviewer_id}` : undefined} className="no-underline">
-                        <Badge variant="secondary">Reviewer: {reviewerName || '—'}</Badge>
-                      </a>
+                      {q.difficulty_level && <Badge variant="outline">{q.difficulty_level}</Badge>}
+                      {q.published_at && <Badge variant="outline">Published {new Date(q.published_at).toLocaleDateString()}</Badge>}
+                      {q.source_type && <Badge variant="secondary">Source: {q.source_type}</Badge>}
                     </div>
-                    {q.source && <div className="mt-2 text-sm text-muted-foreground">Source: {q.source}</div>}
                   </>
                 )}
               </CardContent>
             </Card>
-            
+
             {/* Discussion Panel */}
             {q && (
               <div className="mt-6">
@@ -514,7 +491,6 @@ const goNext = async () => {
                   <div className="text-xs text-muted-foreground mt-1">{answeredCount} / {totalQuestions} answered</div>
                 </CardContent>
               </Card>
-              {/* Feedback moved below the question; sidebar version removed */}
             </div>
           </aside>
         </div>
