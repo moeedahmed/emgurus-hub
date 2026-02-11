@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/core/auth/AuthProvider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GraduationCap, BookOpen, Newspaper, FlaskConical, FileText, Briefcase, Mic, ClipboardList } from 'lucide-react';
+import { GraduationCap, BookOpen, Newspaper, MessageSquare, FlaskConical, FileText, Briefcase, Mic, ClipboardList } from 'lucide-react';
 
 const modules = [
   {
@@ -27,6 +27,14 @@ const modules = [
     description: 'Expert insights and career guidance',
     icon: Newspaper,
     to: '/blog',
+    status: 'active' as const,
+  },
+  {
+    id: 'forum',
+    name: 'Forum',
+    description: 'Discuss cases, share tips, connect with peers',
+    icon: MessageSquare,
+    to: '/forum',
     status: 'active' as const,
   },
   {

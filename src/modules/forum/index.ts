@@ -1,0 +1,1 @@
+export { ForumRoutes } from './ForumRoutes';
