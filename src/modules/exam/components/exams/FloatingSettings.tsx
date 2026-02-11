@@ -39,7 +39,7 @@ export default function FloatingSettings({
   const [topic, setTopic] = useState(currentTopic);
   const [difficulty, setDifficulty] = useState(currentDifficulty);
 
-  const areas = exam ? ["All areas", ...CURRICULA[exam]] : ["All areas"];
+  const areas = exam && CURRICULA[exam] ? ["All areas", ...CURRICULA[exam]] : ["All areas"];
 
   const handleApply = () => {
     onUpdate({ exam, count, topic, difficulty });

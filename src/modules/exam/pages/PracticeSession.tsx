@@ -56,6 +56,7 @@ export default function PracticeSession() {
   const currentQuestion = questions[currentIndex];
 
   useEffect(() => {
+    console.log('PracticeSession mounted', { sessionState, questions });
     document.title = "Study Session • EM Gurus";
     document.body.classList.add('exam-shell');
     return () => document.body.classList.remove('exam-shell');
@@ -233,10 +234,18 @@ export default function PracticeSession() {
       return Object.entries(result.explanation).map(([key, text]) => `${key}: ${text}`).join('\n\n');
     }
     if (q.per_option_explanations) {
-      return Object.entries(q.per_option_explanations).map(([key, text]) => `${key}: ${text}`).join('\n\n');
+      const explanations = typeof q.per_option_explanations === 'string' 
+        ? JSON.parse(q.per_option_explanations) 
+        : q.per_option_explanations;
+      return Object.entries(explanations).map(([key, text]) => `${key}: ${text}`).join('\n\n');
     }
     return undefined;
   };
+
+  // Safe options (handle potential JSON string vs object issues)
+  const safeOptions = currentQuestion?.options 
+    ? (Array.isArray(currentQuestion.options) ? currentQuestion.options : [])
+    : [];
 
   return (
     <div className="container mx-auto px-4 py-6 overflow-x-clip">
@@ -295,7 +304,7 @@ export default function PracticeSession() {
                 <>
                   <QuestionCard
                     stem={currentQuestion.stem}
-                    options={currentQuestion.options}
+                    options={safeOptions}
                     selectedKey={answers[currentQuestion.id] || ""}
                     onSelect={(key) => handleAnswer(currentQuestion.id, key)}
                     showExplanation={showExplanations[currentQuestion.id] || false}
