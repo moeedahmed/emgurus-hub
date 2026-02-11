@@ -11,6 +11,7 @@ import { ExamRoutes } from '@/modules/exam';
 import { BlogRoutes } from '@/modules/blog';
 import { ForumRoutes } from '@/modules/forum';
 import { Profile } from '@/app/pages/Profile';
+import { Admin } from '@/app/pages/Admin';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileLoading } = useAuth();
@@ -81,6 +82,7 @@ export function AppRouter() {
           <Route path="/blog/*" element={<BlogRoutes />} />
           <Route path="/forum/*" element={<ForumRoutes />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
 
         {/* Fallback */}
