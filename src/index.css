@@ -4,6 +4,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
 /* EMGurus Hub - Career-Guru Design System (Tailwind v4 + Shadcn) */
 
 @layer base {
