@@ -69,7 +69,7 @@ export default function Exams() {
               <Button 
                 size="lg" 
                 className="w-full group mt-auto"
-                onClick={() => navigate('/exams/ai-practice')}
+                onClick={() => navigate('/exam/ai/config')}
                 aria-label="Start AI Mode"
               >
                 Start AI Mode
@@ -113,7 +113,7 @@ export default function Exams() {
               <Button 
                 size="lg" 
                 className="w-full group mt-auto"
-                onClick={() => navigate('/exams/practice')}
+                onClick={() => navigate('/exam/practice/config')}
                 aria-label="Start Study Session"
               >
                 Start Study Session
@@ -153,7 +153,7 @@ export default function Exams() {
               <Button 
                 size="lg" 
                 className="w-full group mt-auto"
-                onClick={() => navigate('/exams/exam')}
+                onClick={() => navigate('/exam/config')}
                 aria-label="Start Exam"
               >
                 Start Exam

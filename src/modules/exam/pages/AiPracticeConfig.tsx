@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/core/auth/supabase';
-import { CURRICULA, EXAMS, ExamName } from "@/modules/exam/lib/curricula";
+import * as examApi from '@/modules/exam/lib/examApi';
 
 const COUNTS = [10, 25, 50];
-const DIFFICULTIES = [
-  { value: "easy", label: "Easy" },
-  { value: "medium", label: "Medium" },
-  { value: "hard", label: "Hard" }
+const DIFFICULTIES: { value: examApi.Question['difficulty_level']; label: string }[] = [
+  { value: "C1", label: "Easy (C1)" },
+  { value: "C2", label: "Medium (C2)" },
+  { value: "C3", label: "Hard (C3)" }
 ];
 
 export default function AiPracticeConfig() {
@@ -28,39 +28,70 @@ export default function AiPracticeConfig() {
 
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [exam, setExam] = useState<ExamName | "">("");
+  const [examId, setExamId] = useState<string>("");
+  const [topicId, setTopicId] = useState<string>("all");
   const [count, setCount] = useState<number>(10);
-  const [area, setArea] = useState<string>("All areas");
-  const [difficulty, setDifficulty] = useState<string>("medium");
+  const [difficulty, setDifficulty] = useState<string>("C2");
   const [loading, setLoading] = useState(false);
 
-  const areas = useMemo(() => (exam ? ["All areas", ...CURRICULA[exam]] : ["All areas"]) , [exam]);
+  const [exams, setExams] = useState<examApi.Exam[]>([]);
+  const [topics, setTopics] = useState<examApi.Topic[]>([]);
 
-  const start = async () => {
-    if (!exam) return;
-    
-    // Check auth first
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate(`/auth?returnTo=${encodeURIComponent('/exams/ai-practice')}`);
+  // Load available exams
+  useEffect(() => {
+    (async () => {
+      try {
+        const { exams: list } = await examApi.listExams();
+        setExams(list);
+      } catch (err) {
+        console.error('Failed to load exams:', err);
+      }
+    })();
+  }, []);
+
+  // Load topics when exam changes
+  useEffect(() => {
+    if (!examId) {
+      setTopics([]);
       return;
     }
-    
+    (async () => {
+      try {
+        const { topics: list } = await examApi.listTopics(examId);
+        setTopics(list);
+      } catch (err) {
+        console.error('Failed to load topics:', err);
+      }
+    })();
+  }, [examId]);
+
+  // Reset topic when exam changes
+  useEffect(() => {
+    setTopicId("all");
+  }, [examId]);
+
+  const start = async () => {
+    if (!examId) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate(`/auth?returnTo=${encodeURIComponent('/exam/ai/config')}`);
+      return;
+    }
+
     setLoading(true);
     try {
-      // Navigate directly to session page with query params
       const params = new URLSearchParams();
-      params.set('exam', exam);
+      params.set('exam_id', examId);
       params.set('count', String(count));
-      if (area !== 'All areas') params.set('topic', area);
+      if (topicId !== 'all') params.set('topic_id', topicId);
       params.set('difficulty', difficulty);
-      navigate(`/exams/ai-practice/session/${Date.now()}?${params.toString()}`);
+      navigate(`/exam/ai/session/${Date.now()}?${params.toString()}`);
     } catch (err: any) {
       console.error('Start failed', err);
-      const errorMsg = err?.message || String(err);
-      toast({ 
-        title: "Start failed", 
-        description: errorMsg,
+      toast({
+        title: "Start failed",
+        description: err?.message || String(err),
         variant: 'destructive'
       });
     } finally {
@@ -80,7 +111,7 @@ export default function AiPracticeConfig() {
             </h1>
             <p className="text-sm text-muted-foreground">AI-generated questions with instant feedback</p>
           </div>
-          <Button variant="outline" onClick={() => navigate('/exams')}>
+          <Button variant="outline" onClick={() => navigate('/exam')}>
             Back to Exams
           </Button>
         </div>
@@ -96,12 +127,12 @@ export default function AiPracticeConfig() {
         <CardContent className="grid gap-6 md:grid-cols-2">
           <div>
             <Label>Exam <span className="text-destructive">*</span></Label>
-            <Select value={exam} onValueChange={(v) => setExam(v as ExamName)}>
+            <Select value={examId} onValueChange={setExamId}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select exam" />
               </SelectTrigger>
               <SelectContent>
-                {EXAMS.map(e => (<SelectItem key={e} value={e}>{e}</SelectItem>))}
+                {exams.map(e => (<SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
@@ -119,13 +150,14 @@ export default function AiPracticeConfig() {
           </div>
 
           <div>
-            <Label>Curriculum</Label>
-            <Select value={area} onValueChange={setArea} disabled={!exam}>
+            <Label>Topic</Label>
+            <Select value={topicId} onValueChange={setTopicId} disabled={!examId}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="All areas" />
               </SelectTrigger>
               <SelectContent>
-                {areas.map(a => (<SelectItem key={a} value={a}>{a}</SelectItem>))}
+                <SelectItem value="all">All areas</SelectItem>
+                {topics.map(t => (<SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
@@ -137,7 +169,7 @@ export default function AiPracticeConfig() {
                 <SelectValue placeholder="Select difficulty" />
               </SelectTrigger>
               <SelectContent>
-                {DIFFICULTIES.map(d => (<SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>))}
+                {DIFFICULTIES.map(d => (<SelectItem key={d.value} value={d.value!}>{d.label}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
@@ -166,7 +198,7 @@ export default function AiPracticeConfig() {
           </div>
 
           <div className="md:col-span-2 flex items-center gap-2 justify-end pt-2">
-            <Button onClick={start} disabled={!exam || loading} size="lg">
+            <Button onClick={start} disabled={!examId || loading} size="lg">
               {loading ? 'Generating…' : 'Generate'}
             </Button>
           </div>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ReportCard } from '@/modules/exam/components/exams/ReportCard';
 
@@ -31,16 +31,16 @@ export default function ExamReport() {
   // Redirect if no report data
   useEffect(() => {
     if (!reportData) {
-      navigate('/exams', { replace: true });
+      navigate('/exam', { replace: true });
     }
   }, [reportData, navigate]);
 
   if (!reportData) {
-    return null; // Will redirect
+    return null;
   }
 
   const handleRetake = () => {
-    navigate('/exams/exam');
+    navigate('/exam/config');
   };
 
   const handleViewAttempts = () => {
@@ -48,7 +48,7 @@ export default function ExamReport() {
   };
 
   const handleBackToExams = () => {
-    navigate('/exams');
+    navigate('/exam');
   };
 
   return (

@@ -9,20 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/core/auth/supabase';
-import { CURRICULA, EXAMS, ExamName } from "@/modules/exam/lib/curricula";
-import { getJson } from "@/modules/exam/lib/functionsClient";
 import { useRoles } from "@/modules/exam/hooks/useRoles";
-
-// Map human names to backend enum codes
-const EXAM_CODE_MAP: Record<ExamName, string> = {
-  "MRCEM Primary": "MRCEM_Primary",
-  "MRCEM Intermediate SBA": "MRCEM_SBA",
-  "FRCEM SBA": "FRCEM_SBA",
-  "FCPS Part 1 – Pakistan": "FCPS_PART1",
-  "FCPS IMM – Pakistan": "FCPS_IMM",
-  "FCPS Part 2 – Pakistan": "FCPS_PART2",
-  "Other": "OTHER",
-};
+import * as examApi from '@/modules/exam/lib/examApi';
 
 const TIME_OPTIONS = [
   { value: "30", label: "30 minutes" },
@@ -44,16 +32,15 @@ export default function ExamConfig() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isAdmin, isGuru } = useRoles();
-  const [exam, setExam] = useState<ExamName | "">("");
-  const [topic, setTopic] = useState<string>("All areas");
+  const [examId, setExamId] = useState<string>("");
+  const [topicId, setTopicId] = useState<string>("all");
   const [count, setCount] = useState<number>(25);
   const [timeLimit, setTimeLimit] = useState<string>("60");
   const [loading, setLoading] = useState(false);
 
-  // Available topics based on reviewed questions
-  const [availableTopics, setAvailableTopics] = useState<string[]>(["All areas"]);
-  const [availableExams, setAvailableExams] = useState<ExamName[]>([...EXAMS]);
-  
+  const [exams, setExams] = useState<examApi.Exam[]>([]);
+  const [topics, setTopics] = useState<examApi.Topic[]>([]);
+
   // Subscription check
   const [isPaid, setIsPaid] = useState(false);
   const maxQuestions = isPaid ? 100 : 25;
@@ -74,101 +61,54 @@ export default function ExamConfig() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase
-          .from('reviewed_exam_questions')
-          .select('exam')
-          .eq('status', 'approved')
-          .not('exam', 'is', null);
-        
-        const codes = Array.from(new Set(data?.map(r => r.exam).filter(Boolean) || []));
-        const names = EXAMS.filter(name => codes.includes(EXAM_CODE_MAP[name] || name));
-        setAvailableExams(names.length ? names : [...EXAMS]);
-      } catch {
-        setAvailableExams([...EXAMS]);
+        const { exams: list } = await examApi.listExams();
+        setExams(list);
+      } catch (err) {
+        console.error('Failed to load exams:', err);
       }
     })();
   }, []);
 
-  // Load available topics when exam changes
+  // Load topics when exam changes
   useEffect(() => {
-    (async () => {
-      if (!exam) {
-        setAvailableTopics(["All areas"]);
-        return;
-      }
-
-      try {
-        const examCode = EXAM_CODE_MAP[exam] || exam;
-        const { data } = await supabase
-          .from('reviewed_exam_questions')
-          .select('topic')
-          .eq('status', 'approved')
-          .eq('exam', examCode)
-          .not('topic', 'is', null);
-
-        const topics = Array.from(new Set(data?.map(r => r.topic).filter(Boolean) || []));
-        const allowed = CURRICULA[exam] ? topics.filter(t => CURRICULA[exam].includes(t)) : topics;
-        setAvailableTopics(['All areas', ...allowed]);
-      } catch {
-        setAvailableTopics(['All areas']);
-      }
-    })();
-  }, [exam]);
-
-  // Reset topic if it becomes unavailable
-  useEffect(() => {
-    if (!availableTopics.includes(topic)) {
-      setTopic('All areas');
-    }
-  }, [availableTopics, topic]);
-
-  const fetchReviewedIds = async (examName: ExamName, topicName: string, limit: number) => {
-    const params = new URLSearchParams();
-    params.set('limit', String(Math.max(1, Math.min(100, limit))));
-    const examCode = EXAM_CODE_MAP[examName] || examName;
-    params.set('exam', examCode);
-    if (topicName !== 'All areas') params.set('q', topicName);
-
-    try {
-      const res = await getJson(`/public-reviewed-exams?${params.toString()}`);
-      const items = Array.isArray(res.items) ? res.items : [];
-      const ids = items.map((r: any) => r.id).filter(Boolean);
-      if (ids.length) return ids;
-    } catch {}
-
-    // Fallback to direct query
-    let query = supabase
-      .from('reviewed_exam_questions')
-      .select('id')
-      .eq('status', 'approved')
-      .eq('exam', examCode)
-      .order('reviewed_at', { ascending: false })
-      .limit(Math.max(1, Math.min(100, limit)));
-
-    if (topicName !== 'All areas') {
-      query = query.eq('topic', topicName);
-    }
-
-    const { data } = await query;
-    return data?.map(r => r.id).filter(Boolean) || [];
-  };
-
-  const start = async () => {
-    if (!exam) return;
-    
-    // Check auth first
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate(`/auth?returnTo=${encodeURIComponent('/exams/exam')}`);
+    if (!examId) {
+      setTopics([]);
       return;
     }
-    
+    (async () => {
+      try {
+        const { topics: list } = await examApi.listTopics(examId);
+        setTopics(list);
+      } catch (err) {
+        console.error('Failed to load topics:', err);
+      }
+    })();
+  }, [examId]);
+
+  // Reset topic when exam changes
+  useEffect(() => {
+    setTopicId("all");
+  }, [examId]);
+
+  const start = async () => {
+    if (!examId) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate(`/auth?returnTo=${encodeURIComponent('/exam/config')}`);
+      return;
+    }
+
     setLoading(true);
     try {
-      const finalCount = Math.max(5, Math.min(maxQuestions, count));
-      const ids = await fetchReviewedIds(exam, topic, finalCount);
-      
-      if (!ids.length) {
+      const topicIds = topicId === 'all' ? undefined : [topicId];
+      const result = await examApi.startAttempt({
+        exam_id: examId,
+        mode: 'exam',
+        topic_ids: topicIds,
+      });
+
+      if (!result.questions.length) {
         toast({
           title: "No questions available",
           description: "No questions match your selected criteria.",
@@ -177,28 +117,24 @@ export default function ExamConfig() {
         return;
       }
 
-      // Shuffle the IDs for randomization
-      const shuffledIds = [...ids].sort(() => Math.random() - 0.5).slice(0, finalCount);
       const limitSec = Number(timeLimit) * 60;
-      
-      // Prepare session state with proper data structure
-      const sessionState = {
-        ids: shuffledIds,
-        limitSec,
-        exam,
-        topic: topic === 'All areas' ? undefined : topic,
-        count: finalCount
-      };
-      
-      console.log('Starting exam session with:', sessionState);
-      
-      navigate('/exams/exam/session', { 
-        state: sessionState
+      const selectedExam = exams.find(e => e.id === examId);
+
+      navigate(`/exam/session/${result.attempt_id}`, {
+        state: {
+          attemptId: result.attempt_id,
+          questions: result.questions,
+          limitSec,
+          examId,
+          examName: selectedExam?.name || 'Exam',
+          topicId: topicId === 'all' ? undefined : topicId,
+          count: Math.min(count, result.questions.length),
+        }
       });
     } catch (err: any) {
       console.error('Start failed', err);
-      toast({ 
-        title: "Start failed", 
+      toast({
+        title: "Start failed",
         description: err?.message || String(err),
         variant: 'destructive'
       });
@@ -219,7 +155,7 @@ export default function ExamConfig() {
             </h1>
             <p className="text-sm text-muted-foreground">Timed practice with realistic exam conditions</p>
           </div>
-          <Button variant="outline" onClick={() => navigate('/exams')}>
+          <Button variant="outline" onClick={() => navigate('/exam')}>
             Back to Exams
           </Button>
         </div>
@@ -235,13 +171,13 @@ export default function ExamConfig() {
         <CardContent className="grid gap-6 md:grid-cols-2">
           <div>
             <Label>Exam <span className="text-destructive">*</span></Label>
-            <Select value={exam} onValueChange={(v) => setExam(v as ExamName)}>
+            <Select value={examId} onValueChange={setExamId}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select exam" />
               </SelectTrigger>
               <SelectContent>
-                {availableExams.map(e => (
-                  <SelectItem key={e} value={e}>{e}</SelectItem>
+                {exams.map(e => (
+                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -249,13 +185,14 @@ export default function ExamConfig() {
 
           <div>
             <Label>Topic</Label>
-            <Select value={topic} onValueChange={setTopic} disabled={!exam}>
+            <Select value={topicId} onValueChange={setTopicId} disabled={!examId}>
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="All areas" />
               </SelectTrigger>
               <SelectContent>
-                {availableTopics.map(t => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem value="all">All areas</SelectItem>
+                {topics.map(t => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -309,7 +246,7 @@ export default function ExamConfig() {
           </div>
 
           <div className="md:col-span-2 flex items-center gap-2 justify-end pt-2">
-            <Button onClick={start} disabled={!exam || loading} size="lg">
+            <Button onClick={start} disabled={!examId || loading} size="lg">
               {loading ? 'Loading questions...' : 'Start Exam'}
             </Button>
           </div>
