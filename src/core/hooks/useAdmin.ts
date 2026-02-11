@@ -5,25 +5,35 @@ import { useAuth } from '@/core/auth/AuthProvider';
 export function useAdmin() {
   const { user } = useAuth();
 
-  const { data: roles = [], isLoading } = useQuery({
-    queryKey: ['user-roles', user?.id],
+  const { data: isAdmin = false, isLoading: adminLoading } = useQuery({
+    queryKey: ['user-role-admin', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user!.id);
-
-      if (error) return [];
-      return data?.map(r => r.role) || [];
+      const { data } = await supabase.rpc('user_has_role', { check_role: 'admin' });
+      return data === true;
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: isGuru = false, isLoading: guruLoading } = useQuery({
+    queryKey: ['user-role-guru', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('user_has_role', { check_role: 'guru' });
+      return data === true;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const roles = [
+    ...(isAdmin ? ['admin'] : []),
+    ...(isGuru ? ['guru'] : []),
+  ];
+
   return {
-    isAdmin: roles.includes('admin'),
-    isGuru: roles.includes('guru'),
+    isAdmin,
+    isGuru,
     roles,
-    isLoading,
+    isLoading: adminLoading || guruLoading,
   };
 }
