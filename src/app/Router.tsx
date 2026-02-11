@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/core/auth/AuthProvider';
 import { HubLayout } from '@/core/layouts/HubLayout';
@@ -6,12 +7,22 @@ import { Login } from '@/app/pages/Login';
 import { SignUp } from '@/app/pages/SignUp';
 import { Onboarding } from '@/app/pages/Onboarding';
 import { HubDashboard } from '@/app/pages/HubDashboard';
-import { CareerRoutes } from '@/modules/career';
-import { ExamRoutes } from '@/modules/exam';
-import { BlogRoutes } from '@/modules/blog';
-import { ForumRoutes } from '@/modules/forum';
-import { Profile } from '@/app/pages/Profile';
-import { Admin } from '@/app/pages/Admin';
+
+// Lazy-loaded modules — each becomes a separate JS chunk
+const CareerRoutes = lazy(() => import('@/modules/career').then(m => ({ default: m.CareerRoutes })));
+const ExamRoutes = lazy(() => import('@/modules/exam').then(m => ({ default: m.ExamRoutes })));
+const BlogRoutes = lazy(() => import('@/modules/blog').then(m => ({ default: m.BlogRoutes })));
+const ForumRoutes = lazy(() => import('@/modules/forum').then(m => ({ default: m.ForumRoutes })));
+const Profile = lazy(() => import('@/app/pages/Profile').then(m => ({ default: m.Profile })));
+const Admin = lazy(() => import('@/app/pages/Admin').then(m => ({ default: m.Admin })));
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, profileLoading } = useAuth();
@@ -26,7 +37,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // Redirect to onboarding if not completed
   if (!profile?.hub_onboarding_completed) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -47,7 +57,6 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // If already onboarded, skip to hub
   if (profile?.hub_onboarding_completed) {
     return <Navigate to="/hub" replace />;
   }
@@ -74,29 +83,20 @@ export function AppRouter() {
         {/* Onboarding */}
         <Route path="/onboarding" element={<OnboardingRoute><Onboarding /></OnboardingRoute>} />
 
-        {/* Protected routes */}
+        {/* Protected routes — modules are lazy-loaded */}
         <Route element={<ProtectedRoute><HubLayout /></ProtectedRoute>}>
           <Route path="/hub" element={<HubDashboard />} />
-          <Route path="/career/*" element={<CareerRoutes />} />
-          <Route path="/exam/*" element={<ExamRoutes />} />
-          <Route path="/blog/*" element={<BlogRoutes />} />
-          <Route path="/forum/*" element={<ForumRoutes />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/career/*" element={<Suspense fallback={<LoadingSpinner />}><CareerRoutes /></Suspense>} />
+          <Route path="/exam/*" element={<Suspense fallback={<LoadingSpinner />}><ExamRoutes /></Suspense>} />
+          <Route path="/blog/*" element={<Suspense fallback={<LoadingSpinner />}><BlogRoutes /></Suspense>} />
+          <Route path="/forum/*" element={<Suspense fallback={<LoadingSpinner />}><ForumRoutes /></Suspense>} />
+          <Route path="/profile" element={<Suspense fallback={<LoadingSpinner />}><Profile /></Suspense>} />
+          <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
         </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
-  );
-}
-
-function ComingSoon({ module }: { module: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <h2 className="text-xl font-semibold mb-2">{module}</h2>
-      <p className="text-muted-foreground">Module coming soon. We're building this next.</p>
-    </div>
   );
 }
