@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import PageHero from "@/modules/exam/components/shared/PageHero";
+import PageHero from "@/core/components/PageHero";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";

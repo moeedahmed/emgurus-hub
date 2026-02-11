@@ -11,7 +11,7 @@ import BlogsFilterPanel from "@/modules/blog/components/blogs/BlogsFilterPanel";
 import TopAuthorsPanel from "@/modules/blog/components/blogs/TopAuthorsPanel";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import PageHero from '@/modules/exam/components/shared/PageHero';
+import PageHero from '@/core/components/PageHero';
 import { CATEGORIES, sanitizeCategory } from "@/modules/blog/lib/taxonomy";
 import { Chip } from "@/components/ui/chip";
 import FeaturedBlogCarousel from "@/modules/blog/components/blogs/FeaturedBlogCarousel";

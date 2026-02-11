@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageSquare, Pin, Lock, ArrowUp, ArrowDown } from 'lucide-react';
+import PageHero from '@/core/components/PageHero';
+import { EmptyState } from '@/core/components/EmptyState';
 
 interface Category { id: string; title: string; description: string | null }
 interface Thread {
@@ -116,6 +118,13 @@ export default function ThreadList() {
   }
 
   return (
+    <div>
+      <PageHero
+        title="Forum"
+        subtitle="Discuss cases, share tips, and connect with peers."
+        align="center"
+        ctas={[{ label: 'New Thread', href: '/forum/new' }]}
+      />
     <div className="px-4 py-6 max-w-4xl mx-auto space-y-4">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -143,9 +152,13 @@ export default function ThreadList() {
 
       {/* Thread list */}
       {filtered.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">
-          No threads found. Be the first to start a discussion!
-        </Card>
+        <EmptyState
+          icon={MessageSquare}
+          title="No threads yet"
+          description="Be the first to start a discussion!"
+          actionLabel="New Thread"
+          actionHref="/forum/new"
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map(t => (
@@ -197,6 +210,7 @@ export default function ThreadList() {
           ))}
         </div>
       )}
+    </div>
     </div>
   );
 }
