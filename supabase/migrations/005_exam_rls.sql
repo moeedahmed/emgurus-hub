@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION public.user_has_role(check_role TEXT)
 RETURNS BOOLEAN AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.user_roles
-    WHERE user_id = auth.uid() AND role = check_role
+    WHERE user_id = auth.uid() AND role = check_role::app_role
   );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
