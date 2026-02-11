@@ -62,7 +62,7 @@ export function ModuleLayout({ title, navItems, children }: ModuleLayoutProps) {
         <div className="flex justify-around py-2">
           <button
             onClick={() => navigate('/hub')}
-            className="flex flex-col items-center gap-1 px-3 py-1 text-xs text-muted-foreground"
+            className="flex flex-col items-center gap-1 px-3 py-2 text-xs text-muted-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Hub</span>
@@ -74,7 +74,7 @@ export function ModuleLayout({ title, navItems, children }: ModuleLayoutProps) {
               end={to.split('/').length <= 2}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-1 px-3 py-1 text-xs transition-colors',
+                  'flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )
               }

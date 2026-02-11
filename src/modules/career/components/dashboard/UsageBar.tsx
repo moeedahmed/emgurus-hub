@@ -81,7 +81,7 @@ export function UsageBar() {
         </div>
 
         {/* Usage Metrics */}
-        <div className="flex items-center gap-4 md:gap-6 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-4 md:gap-6 flex-wrap">
           <UsageMetric
             icon={<Map className="w-3.5 h-3.5" />}
             used={usage.roadmaps.used}

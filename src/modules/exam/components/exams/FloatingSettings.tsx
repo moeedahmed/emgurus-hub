@@ -63,7 +63,7 @@ export default function FloatingSettings({
 
   return (
     <div className="fixed bottom-6 right-6 z-50 pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)]">
-      <Card className="w-80 shadow-lg">
+      <Card className="w-[calc(100vw-2rem)] max-w-80 shadow-lg">
         <CardContent className="p-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Update Settings</h3>

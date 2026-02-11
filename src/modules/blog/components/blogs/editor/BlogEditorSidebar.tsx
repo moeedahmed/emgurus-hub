@@ -20,10 +20,13 @@ const blockTypes = [
 interface BlogEditorSidebarProps {
   // Add Blocks props
   onAddBlock: (type: Block['type']) => void;
-  
+
   // Blog Organization props
   selectedCategoryId?: string;
   onCategoryChange: (categoryId: string | undefined) => void;
+
+  /** Render as a compact horizontal bar for mobile */
+  mobile?: boolean;
 }
 
 function useCollapsibleState(key: string, defaultOpen = true) {
@@ -41,12 +44,34 @@ function useCollapsibleState(key: string, defaultOpen = true) {
   return [isOpen, toggle] as const;
 }
 
-export default function BlogEditorSidebar({ onAddBlock, selectedCategoryId, onCategoryChange }: BlogEditorSidebarProps) {
+export default function BlogEditorSidebar({ onAddBlock, selectedCategoryId, onCategoryChange, mobile }: BlogEditorSidebarProps) {
   const { roles } = useRoles();
   const isUser = !roles.includes("admin") && !roles.includes("guru");
-  
+
   const [addBlocksOpen, toggleAddBlocks] = useCollapsibleState("addBlocks", false);
   const [categoryOpen, toggleCategory] = useCollapsibleState("category", true);
+
+  if (mobile) {
+    return (
+      <Card className="p-3">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <span className="text-xs font-medium text-muted-foreground shrink-0">Add:</span>
+          {blockTypes.map((bt) => (
+            <Button
+              key={bt.type}
+              variant="outline"
+              size="sm"
+              className="shrink-0 gap-1.5 min-h-[44px]"
+              onClick={() => onAddBlock(bt.type)}
+            >
+              <bt.icon className="w-4 h-4 text-primary" />
+              {bt.label}
+            </Button>
+          ))}
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <div className="w-80 space-y-4">

@@ -65,7 +65,7 @@ export const PageHeader = ({
                     </div>
                     {/* Actions - second row on mobile, inline on desktop */}
                     {children && (
-                        <div className="flex items-center gap-1.5 md:gap-2 shrink-0 ml-10 lg:ml-0">
+                        <div className="flex items-center gap-1.5 md:gap-2 shrink-0 ml-0 sm:ml-10 lg:ml-0">
                             {children}
                         </div>
                     )}

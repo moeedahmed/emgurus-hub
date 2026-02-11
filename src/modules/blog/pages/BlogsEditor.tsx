@@ -66,7 +66,7 @@ export default function BlogsEditor() {
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-3xl font-bold mb-6">New Blog</h1>
-      <Card className="p-6 space-y-6">
+      <Card className="p-4 sm:p-6 space-y-6">
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
           <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Post title" />
@@ -129,7 +129,7 @@ export default function BlogsEditor() {
         </div>
         <div className="space-y-2">
           <Label>Content (Markdown supported)</Label>
-          <Textarea className="min-h-[300px]" value={content} onChange={(e) => setContent(e.target.value)} placeholder="# Heading\nYour content..." />
+          <Textarea className="min-h-[200px] sm:min-h-[300px]" value={content} onChange={(e) => setContent(e.target.value)} placeholder="# Heading\nYour content..." />
         </div>
         <div className="flex gap-2 justify-end">
           <Button variant="outline" onClick={() => onSave(false)} disabled={loading}>Save Draft</Button>

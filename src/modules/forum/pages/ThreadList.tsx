@@ -170,8 +170,8 @@ export default function ThreadList() {
                         {t.title}
                       </h3>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{t.content}</p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
+                    <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5 break-words">{t.content}</p>
+                    <div className="flex items-center gap-2 sm:gap-3 mt-2 text-xs text-muted-foreground flex-wrap">
                       <Badge variant="secondary" className="text-xs font-normal">
                         {categoryMap[t.category_id] || 'General'}
                       </Badge>

@@ -149,7 +149,7 @@ export function ReportCard({
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex flex-col md:flex-row gap-3 justify-center">
         <Button 
           onClick={onRetake || (() => navigate('/exams/exam'))}
           className="flex items-center gap-2"

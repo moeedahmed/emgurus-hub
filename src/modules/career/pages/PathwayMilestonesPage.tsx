@@ -328,7 +328,7 @@ const PathwayMilestonesPage = () => {
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-card border border-border/50 rounded-xl p-6 mb-6"
+                    className="bg-card border border-border/50 rounded-xl p-4 sm:p-6 mb-6"
                 >
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">

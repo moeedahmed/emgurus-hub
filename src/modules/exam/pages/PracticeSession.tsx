@@ -261,7 +261,7 @@ export default function PracticeSession() {
           <DrawerContent className="p-4">
             <div className="space-y-4">
               <div className="text-sm font-medium">Jump to Question</div>
-              <div className="grid grid-cols-8 gap-2">
+              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
                 {questions.map((q, i) => {
                   const isCurrent = i === currentIndex;
                   const isAnswered = !!answers[q.id];

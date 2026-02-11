@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
+import { Clock, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/core/auth/supabase';
 import { useRoles } from "@/modules/exam/hooks/useRoles";
@@ -155,8 +155,9 @@ export default function ExamConfig() {
             </h1>
             <p className="text-sm text-muted-foreground">Timed practice with realistic exam conditions</p>
           </div>
-          <Button variant="outline" onClick={() => navigate('/exam')}>
-            Back to Exams
+          <Button variant="outline" onClick={() => navigate('/exam')} className="shrink-0">
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Back to Exams</span>
           </Button>
         </div>
       </div>

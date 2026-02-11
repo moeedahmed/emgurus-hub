@@ -74,7 +74,7 @@ const BlogCategory = () => {
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <header className="mb-6 flex items-center justify-between gap-3">
+      <header className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">{tag}</h1>
           <p className="text-sm text-muted-foreground">Showing {perPage} posts per page</p>
@@ -96,7 +96,7 @@ const BlogCategory = () => {
       </div>
 
       {loading ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(9)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
               <Skeleton className="h-40 w-full" />
@@ -109,11 +109,11 @@ const BlogCategory = () => {
           ))}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {paginated.map((p) => (
             <Card key={p.id} className="overflow-hidden">
               {p.cover_image_url && (
-                <img src={p.cover_image_url} alt={`Cover image for ${p.title}`} className="w-full h-40 object-cover" loading="lazy" />
+                <img src={p.cover_image_url} alt={`Cover image for ${p.title}`} className="w-full h-32 sm:h-40 object-cover" loading="lazy" />
               )}
               <div className="p-4">
                 <div className="mb-2 flex items-center gap-2 flex-wrap">

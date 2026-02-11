@@ -177,7 +177,7 @@ export default function BlogDetail() {
     <main className="min-h-screen">
       {/* Hero Section with Cover Image */}
       {p.cover_image_url && (
-        <div className="relative w-full h-[60vh] overflow-hidden">
+        <div className="relative w-full h-[40vh] sm:h-[50vh] lg:h-[60vh] overflow-hidden">
           <img 
             src={p.cover_image_url} 
             alt={`${p.title} cover image`} 
@@ -186,12 +186,12 @@ export default function BlogDetail() {
             decoding="async" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8">
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
             <div className="container mx-auto">
-              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4 drop-shadow-lg">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-4 drop-shadow-lg">
                 {p.title}
               </h1>
-              <div className="flex items-center gap-4 text-white/90">
+              <div className="flex items-center gap-2 sm:gap-4 text-white/90 flex-wrap">
                 <AuthorChip 
                   id={p.author.id} 
                   name={authorProfile?.full_name || p.author.name} 
@@ -209,7 +209,7 @@ export default function BlogDetail() {
         </div>
       )}
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 lg:pb-8">
         {/* Breadcrumbs */}
         <nav className="text-sm text-muted-foreground mb-8">
           <button className="hover:underline" onClick={() => navigate('/')}>Home</button>
@@ -228,7 +228,7 @@ export default function BlogDetail() {
             {/* No cover image fallback - show title */}
         {!p.cover_image_url && (
           <div className="mb-8">
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">{p.title}</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4">{p.title}</h1>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <AuthorChip 
                 id={p.author.id} 
@@ -244,7 +244,7 @@ export default function BlogDetail() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           <article className="lg:col-span-8 space-y-6">
             <div className="prose prose-lg mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             
@@ -352,7 +352,7 @@ export default function BlogDetail() {
 
             {/* Bottom Engagement Actions */}
             <div className="mt-8 p-4 sm:p-6 bg-muted/30 rounded-2xl max-w-3xl mx-auto">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
@@ -402,9 +402,9 @@ export default function BlogDetail() {
                 bio={authorProfile?.bio}
                 specialty={authorProfile?.specialty}
                 onClick={(id) => navigate(`/profile/${id}`)}
-                className="rounded-2xl shadow p-6"
+                className="rounded-2xl shadow p-4 sm:p-6"
               />
-              
+
               {/* Reviewer Attribution */}
               {data.reviewer && (
                 <AuthorCard
@@ -416,7 +416,7 @@ export default function BlogDetail() {
                   specialty={reviewerProfile?.specialty}
                   role="reviewer"
                   onClick={(id) => navigate(`/profile/${id}`)}
-                  className="rounded-2xl shadow p-6"
+                  className="rounded-2xl shadow p-4 sm:p-6"
                 />
               )}
             </section>

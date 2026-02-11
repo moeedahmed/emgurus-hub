@@ -192,7 +192,7 @@ export default function ThreadDetail() {
           <div className="flex flex-col items-center gap-0.5 shrink-0">
             <button
               onClick={() => handleVote('up')}
-              className={`p-1 rounded transition-colors ${userVote === 'up' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary'}`}
+              className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded transition-colors ${userVote === 'up' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary'}`}
             >
               <ArrowUp className="h-5 w-5" />
             </button>
@@ -201,7 +201,7 @@ export default function ThreadDetail() {
             </span>
             <button
               onClick={() => handleVote('down')}
-              className={`p-1 rounded transition-colors ${userVote === 'down' ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-destructive'}`}
+              className={`min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded transition-colors ${userVote === 'down' ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-destructive'}`}
             >
               <ArrowDown className="h-5 w-5" />
             </button>
@@ -215,7 +215,7 @@ export default function ThreadDetail() {
               <Badge variant="secondary" className="text-xs">{categoryName}</Badge>
             </div>
             <h1 className="text-xl font-bold font-[var(--font-display)] mb-2">{thread.title}</h1>
-            <p className="whitespace-pre-wrap leading-relaxed text-sm">{thread.content}</p>
+            <p className="whitespace-pre-wrap break-words overflow-wrap-anywhere leading-relaxed text-sm">{thread.content}</p>
             <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
               <Avatar className="h-5 w-5">
                 <AvatarImage src={authorAvatar || undefined} />
@@ -243,17 +243,17 @@ export default function ThreadDetail() {
         ) : (
           replies.map(r => (
             <Card key={r.id} className="p-4">
-              <p className="text-sm whitespace-pre-wrap">{r.content}</p>
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">{r.content}</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-3 gap-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   <Avatar className="h-4 w-4">
                     <AvatarImage src={r.author_avatar || undefined} />
                     <AvatarFallback className="text-[8px]">{(r.author_name || 'U').slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <span>{r.author_name || 'User'}</span>
-                  <span>{new Date(r.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>{new Date(r.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                 </div>
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => quoteReply(r.content)}>
+                <Button variant="ghost" size="sm" className="text-xs min-h-[44px]" onClick={() => quoteReply(r.content)}>
                   Quote
                 </Button>
               </div>
@@ -277,7 +277,7 @@ export default function ThreadDetail() {
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
           />
-          <Button onClick={submitReply} disabled={posting || replyText.trim().length < 10}>
+          <Button onClick={submitReply} disabled={posting || replyText.trim().length < 10} className="w-full sm:w-auto">
             {posting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Posting...</> : 'Post Reply'}
           </Button>
         </Card>

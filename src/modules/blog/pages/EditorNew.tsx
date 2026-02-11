@@ -178,10 +178,20 @@ export default function EditorNew() {
           </Button>
         </div>
       
-      <div className="flex gap-8 relative">
+      {/* Mobile block picker toggle */}
+      <div className="lg:hidden mb-4">
+        <BlogEditorSidebar
+          onAddBlock={handleAddBlock}
+          selectedCategoryId={categoryId}
+          onCategoryChange={setCategoryId}
+          mobile
+        />
+      </div>
+
+      <div className="flex gap-4 lg:gap-8 relative">
         {/* Main Content */}
         <div className="flex-1 max-w-5xl">
-          <Card className="p-8">
+          <Card className="p-4 sm:p-6 lg:p-8">
             <div className="space-y-8">
               <div>
                 <h1 className="text-4xl font-bold mb-8 text-center">New Blog</h1>
@@ -219,7 +229,7 @@ export default function EditorNew() {
                       <img
                         src={cover}
                         alt="Blog cover preview"
-                        className="w-full max-h-80 object-cover rounded-lg border shadow-sm"
+                        className="w-full max-h-48 sm:max-h-64 lg:max-h-80 object-cover rounded-lg border shadow-sm"
                         loading="lazy"
                       />
                     )}
@@ -231,9 +241,10 @@ export default function EditorNew() {
                 <div className="space-y-6">
                   <Label className="text-base font-semibold">Content</Label>
                   {blocks.length === 0 ? (
-                    <Card className="p-12 text-center border-dashed border-2">
+                    <Card className="p-8 sm:p-12 text-center border-dashed border-2">
                       <div className="text-muted-foreground">
-                        Start building your post by adding blocks from the sidebar →
+                        <span className="lg:hidden">Tap + above to add blocks</span>
+                        <span className="hidden lg:inline">Start building your post by adding blocks from the sidebar →</span>
                       </div>
                     </Card>
                   ) : (
@@ -321,7 +332,7 @@ export default function EditorNew() {
               </div>
               
               <div className="border-t pt-8">
-                <div className="flex gap-4 justify-end">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:justify-end">
                   <Button variant="outline" onClick={() => onSave(false)} disabled={loading} size="lg">
                     Save Draft
                   </Button>

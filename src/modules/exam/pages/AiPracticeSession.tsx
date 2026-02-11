@@ -435,7 +435,7 @@ export default function AiPracticeSession() {
           <DrawerContent className="p-4">
             <div className="space-y-4">
               <div className="text-sm font-medium">Jump to Question</div>
-              <div className="grid grid-cols-8 gap-2">
+              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
                 {Array.from({ length: total }, (_, i) => {
                   const isCurrent = i === idx;
                   const isAnswered = i < idx || (i === idx && !!selected);

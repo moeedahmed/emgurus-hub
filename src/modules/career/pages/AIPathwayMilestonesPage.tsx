@@ -162,7 +162,7 @@ const AIPathwayMilestonesPage = () => {
           )}
 
           {/* Progress Summary */}
-          <div className="p-6 rounded-lg border bg-card">
+          <div className="p-4 sm:p-6 rounded-lg border bg-card">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">Progress</h3>

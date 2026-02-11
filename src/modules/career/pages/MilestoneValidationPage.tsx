@@ -114,9 +114,9 @@ WHERE id = '${item.milestone_id}';`
         </div>
 
         {/* Filters & Actions */}
-        <div className="flex flex-wrap gap-4 items-center justify-between mb-6">
-          <div className="flex gap-2 items-center">
-            <Filter className="w-4 h-4 text-muted-foreground" />
+        <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+            <Filter className="w-4 h-4 text-muted-foreground hidden sm:block" />
             <Select
               value={filters.status || 'all'}
               onValueChange={(value) =>
@@ -126,7 +126,7 @@ WHERE id = '${item.milestone_id}';`
                 }))
               }
             >
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -147,7 +147,7 @@ WHERE id = '${item.milestone_id}';`
                 }))
               }
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-full sm:w-[160px]">
                 <SelectValue placeholder="Confidence" />
               </SelectTrigger>
               <SelectContent>

@@ -90,7 +90,7 @@ export default function NewThread() {
             />
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
             <Button variant="outline" onClick={() => navigate('/forum')}>Cancel</Button>
             <Button onClick={handleSubmit} disabled={!canSubmit || saving}>
               {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creating...</> : 'Create Thread'}

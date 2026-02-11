@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,8 +112,9 @@ export default function AiPracticeConfig() {
             </h1>
             <p className="text-sm text-muted-foreground">AI-generated questions with instant feedback</p>
           </div>
-          <Button variant="outline" onClick={() => navigate('/exam')}>
-            Back to Exams
+          <Button variant="outline" onClick={() => navigate('/exam')} className="shrink-0">
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Back to Exams</span>
           </Button>
         </div>
       </div>
