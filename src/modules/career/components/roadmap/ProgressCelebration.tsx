@@ -9,10 +9,10 @@ interface ProgressCelebrationProps {
 }
 
 const confettiColors = [
-  'hsl(var(--primary))',
-  'hsl(var(--success))',
-  'hsl(var(--accent))',
-  'hsl(var(--warning))',
+  'var(--primary)',
+  'var(--accent)',
+  'var(--destructive)',
+  'var(--ring)',
 ];
 
 interface Particle {

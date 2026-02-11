@@ -119,7 +119,7 @@ function ReportChooser({ onChange }: { onChange: (v: Feedback) => void }) {
               <input
                 type="radio"
                 name="feedback"
-                className="accent-[hsl(var(--primary))]"
+                className="accent-primary"
                 checked={value === o.k}
                 onChange={() => setValue(o.k)}
               />

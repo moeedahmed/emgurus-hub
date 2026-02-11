@@ -22,14 +22,14 @@ const TrendCard: React.FC<{ title: string; series: Point[]; rangeLabel?: string;
             <AreaChart data={series} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
               <defs>
                 <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.35}/>
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" hide tickLine axisLine/>
               <YAxis hide tickLine axisLine/>
               <Tooltip formatter={(v: any) => String(v)} labelFormatter={(l) => l} />
-              <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#trendFill)" />
+              <Area type="monotone" dataKey="value" stroke="var(--primary)" fillOpacity={1} fill="url(#trendFill)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
