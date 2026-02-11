@@ -10,6 +10,7 @@ export interface Profile {
   specialty: string | null;
   hub_onboarding_completed: boolean;
   avatar_url: string | null;
+  bio: string | null;
 }
 
 interface AuthContextType {
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, display_name, track, career_stage, specialty, hub_onboarding_completed, avatar_url')
+        .select('id, display_name, track, career_stage, specialty, hub_onboarding_completed, avatar_url, bio')
         .eq('id', userId)
         .maybeSingle();
 
