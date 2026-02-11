@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Home, GraduationCap, BookOpen, Newspaper, User, LogOut } from 'lucide-react';
+import { Home, GraduationCap, BookOpen, Newspaper, User, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/core/auth/AuthProvider';
+import { useAdmin } from '@/core/hooks/useAdmin';
 import { cn } from '@/lib/utils';
 
 const hubNavItems = [
@@ -12,6 +13,7 @@ const hubNavItems = [
 
 export function HubLayout() {
   const { signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const { pathname } = useLocation();
 
   // Only show hub-level bottom nav on /hub (modules provide their own)
@@ -28,6 +30,11 @@ export function HubLayout() {
             </NavLink>
           </div>
           <div className="flex items-center gap-3">
+            {isAdmin && (
+              <NavLink to="/admin" className={({ isActive }) => cn("text-muted-foreground hover:text-foreground transition-colors", isActive && "text-primary")}>
+                <Shield className="h-5 w-5" />
+              </NavLink>
+            )}
             <NavLink to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">
               <User className="h-5 w-5" />
             </NavLink>

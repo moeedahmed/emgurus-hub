@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import * as examApi from '@/modules/exam/lib/examApi';
+import { useRoles } from "@/modules/exam/hooks/useRoles";
 
 export default function QuestionBankPage() {
   const [examId, setExamId] = useState<string>("");
@@ -15,6 +16,7 @@ export default function QuestionBankPage() {
   const [loading, setLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const navigate = useNavigate();
+  const { isAdmin } = useRoles();
 
   const [exams, setExams] = useState<examApi.Exam[]>([]);
   const [topics, setTopics] = useState<examApi.Topic[]>([]);
@@ -128,13 +130,12 @@ export default function QuestionBankPage() {
               <CardHeader>
                 <CardTitle className="text-base flex items-center justify-between">
                   <span className="truncate">{q.stem?.slice(0, 160) || 'Question'}</span>
-                  <div className="text-xs text-muted-foreground capitalize">{q.status}</div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
                 {q.difficulty_level && <span className="border rounded px-2 py-0.5">{q.difficulty_level}</span>}
                 {q.source_type && <span className="border rounded px-2 py-0.5">{q.source_type}</span>}
-                {q.published_at && (
+                {isAdmin && q.published_at && (
                   <span className="border rounded px-2 py-0.5">Published {new Date(q.published_at).toLocaleDateString()}</span>
                 )}
               </CardContent>

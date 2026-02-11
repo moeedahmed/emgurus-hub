@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listQuestions, listExams, type Question, type Exam } from "@/modules/exam/lib/examApi";
+import { useRoles } from "@/modules/exam/hooks/useRoles";
 
 export default function ReviewedQuestionBank({ embedded = false }: { embedded?: boolean } = {}) {
   const [examId, setExamId] = useState<string | "">("");
@@ -22,6 +23,7 @@ export default function ReviewedQuestionBank({ embedded = false }: { embedded?: 
   const [totalCount, setTotalCount] = useState(0);
   const [exams, setExams] = useState<Exam[]>([]);
   const navigate = useNavigate();
+  const { isAdmin } = useRoles();
 
   useEffect(() => {
     document.title = "Question Bank • EM Gurus";
@@ -160,7 +162,7 @@ export default function ReviewedQuestionBank({ embedded = false }: { embedded?: 
                     <TableRow><TableCell colSpan={2}>Loading…</TableCell></TableRow>
                   ) : (visible.length ? (
                     visible.map((it) => (
-                      <TableRow key={it.id} className="cursor-pointer hover:bg-accent/30" onClick={() => navigate(`/tools/submit-question/${it.id}`, { state: { fromAdmin: true } })}>
+                      <TableRow key={it.id} className="cursor-pointer hover:bg-accent/30" onClick={() => navigate(`/tools/submit-question/${it.id}`, { state: { fromAdmin: isAdmin } })}>
                         <TableCell className="text-xs">{(it.stem || '').slice(0, 140)}</TableCell>
                         <TableCell className="text-xs">{it.difficulty_level || '—'}</TableCell>
                       </TableRow>
@@ -214,13 +216,13 @@ export default function ReviewedQuestionBank({ embedded = false }: { embedded?: 
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="text-sm text-muted-foreground flex flex-col gap-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {it.published_at && (
+                        {isAdmin && it.published_at && (
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="outline" className="text-xs">
                               Published {formatDistanceToNow(new Date(it.published_at), { addSuffix: true })}
                             </Badge>
-                          )}
-                        </div>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 flex-wrap">
                           {it.difficulty_level && (
                             <Badge variant="secondary">{it.difficulty_level}</Badge>

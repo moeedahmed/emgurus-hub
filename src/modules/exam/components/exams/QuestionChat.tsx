@@ -63,6 +63,8 @@ export default function QuestionChat({ questionId }: { questionId: string }) {
     } catch (e) {}
   };
 
+  if (!isAdmin) return null;
+
   return (
     <Card className="p-3 md:p-4 h-[520px] flex flex-col">
       <div className="font-semibold mb-2">Discussion</div>
@@ -75,11 +77,9 @@ export default function QuestionChat({ questionId }: { questionId: string }) {
             <div key={m.id} className="text-sm group">
               <div className="flex items-center justify-between">
                 <div className="text-muted-foreground text-xs mb-1">{new Date(m.created_at).toLocaleString()} • {m.kind}</div>
-                {isAdmin && (
-                  <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100" aria-label="Delete message" onClick={() => handleDelete(m.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100" aria-label="Delete message" onClick={() => handleDelete(m.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
               <div className="bg-muted rounded-md p-2 whitespace-pre-wrap leading-relaxed">{m.message}</div>
             </div>
