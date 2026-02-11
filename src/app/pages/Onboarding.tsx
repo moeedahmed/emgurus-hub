@@ -5,7 +5,10 @@ import { supabase } from '@/core/auth/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, ArrowRight, Check, Stethoscope, Globe, GraduationCap } from 'lucide-react';
+import { 
+  ArrowLeft, ArrowRight, Check, Stethoscope, Globe, GraduationCap,
+  Calendar, Clock, Target, Briefcase 
+} from 'lucide-react';
 
 type Track = 'uk' | 'img' | 'global';
 type Stage = 'student' | 'foundation' | 'core' | 'higher' | 'consultant' | 'img_pathway' | 'other';
@@ -68,7 +71,30 @@ const SPECIALTIES = [
   'Other',
 ];
 
-const TOTAL_STEPS = 4;
+const GOALS = [
+  { id: 'cct', label: 'UK CCT', desc: 'Certificate of Completion of Training' },
+  { id: 'cesr', label: 'CESR / Portfolio', desc: 'Specialist Registration via Portfolio' },
+  { id: 'frcem', label: 'FRCEM Only', desc: 'Exam completion' },
+  { id: 'sas', label: 'SAS / Specialty Doctor', desc: 'Permanent Staff Grade' },
+  { id: 'undecided', label: 'Undecided', desc: 'Exploring options' },
+];
+
+const RHYTHMS = [
+  { id: 'full_time', label: 'Full Time (100%)' },
+  { id: 'ltft_80', label: 'LTFT 80%' },
+  { id: 'ltft_60', label: 'LTFT 60%' },
+  { id: 'ltft_50', label: 'LTFT 50%' },
+  { id: 'locum', label: 'Locum / Bank' },
+];
+
+const TIMELINES = [
+  { id: 'asap', label: 'ASAP / This Year' },
+  { id: '1_year', label: '1-2 Years' },
+  { id: '3_years', label: '3-5 Years' },
+  { id: 'flexible', label: 'Flexible / Long term' },
+];
+
+const TOTAL_STEPS = 5;
 
 export function Onboarding() {
   const { user, refreshProfile } = useAuth();
@@ -76,18 +102,27 @@ export function Onboarding() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
+  // Step 1
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.full_name?.split(' ')[0] || ''
   );
+  // Step 2 & 3
   const [track, setTrack] = useState<Track | null>(null);
   const [stage, setStage] = useState<Stage | null>(null);
+  // Step 4
   const [specialty, setSpecialty] = useState<string | null>(null);
+  // Step 5
+  const [gradYear, setGradYear] = useState<string>('');
+  const [primaryGoal, setPrimaryGoal] = useState<string | null>(null);
+  const [workRhythm, setWorkRhythm] = useState<string | null>(null);
+  const [timeline, setTimeline] = useState<string | null>(null);
 
   const canNext =
     (step === 1 && displayName.trim().length >= 2) ||
     (step === 2 && track !== null) ||
     (step === 3 && stage !== null) ||
-    (step === 4 && specialty !== null);
+    (step === 4 && specialty !== null) ||
+    (step === 5 && gradYear.length === 4 && primaryGoal && workRhythm && timeline);
 
   async function handleComplete() {
     if (!user) return;
@@ -99,6 +134,10 @@ export function Onboarding() {
         track,
         career_stage: stage,
         specialty,
+        graduation_year: parseInt(gradYear, 10),
+        primary_goal: primaryGoal,
+        work_rhythm: workRhythm,
+        timeline_preference: timeline,
         hub_onboarding_completed: true,
         onboarding_completed: true,
         updated_at: new Date().toISOString(),
@@ -255,6 +294,83 @@ export function Onboarding() {
             </div>
           </div>
         )}
+
+        {step === 5 && (
+          <div className="space-y-6 animate-[fade-in_0.3s_ease-out]">
+            <div>
+              <h1 className="text-2xl font-bold font-[var(--font-display)]">Career Context</h1>
+              <p className="text-muted-foreground mt-1">Help us tailor your roadmap and goals.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <GraduationCap className="h-4 w-4 text-primary" /> Graduation Year
+                </label>
+                <Input
+                  type="number"
+                  value={gradYear}
+                  onChange={(e) => setGradYear(e.target.value)}
+                  placeholder="YYYY (e.g. 2020)"
+                  className="text-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" /> Primary Goal
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {GOALS.map((g) => (
+                    <button
+                      key={g.id}
+                      onClick={() => setPrimaryGoal(g.id)}
+                      className={cn(
+                        'text-left px-3 py-2 rounded-lg border text-sm transition-all',
+                        primaryGoal === g.id
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                          : 'border-border hover:bg-card'
+                      )}
+                    >
+                      <span className="font-medium">{g.label}</span>
+                      <span className="text-muted-foreground ml-2 text-xs">- {g.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-primary" /> Rhythm
+                  </label>
+                  <select 
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={workRhythm || ''}
+                    onChange={(e) => setWorkRhythm(e.target.value)}
+                  >
+                    <option value="" disabled>Select...</option>
+                    {RHYTHMS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" /> Timeline
+                  </label>
+                  <select 
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={timeline || ''}
+                    onChange={(e) => setTimeline(e.target.value)}
+                  >
+                    <option value="" disabled>Select...</option>
+                    {TIMELINES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom nav */}
@@ -277,7 +393,7 @@ export function Onboarding() {
             {saving ? (
               <span className="animate-spin h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
             ) : step === TOTAL_STEPS ? (
-              <>Get Started <Check className="h-4 w-4 ml-1" /></>
+              <>Finish <Check className="h-4 w-4 ml-1" /></>
             ) : (
               <>Next <ArrowRight className="h-4 w-4 ml-1" /></>
             )}
