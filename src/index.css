@@ -4,13 +4,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
-/* EMGurus Hub - Career-Guru Design System (Tailwind v4 + Shadcn) */
+/* EMGurus Hub - Career-Guru Teal Design System */
 
 @layer base {
   :root {
-    /* Light mode fallback - not used (dark mode default) */
+    /* Light mode fallback */
     --background: 40 20% 98%;
     --foreground: 220 20% 10%;
     --card: 0 0% 100%;
@@ -34,27 +32,21 @@
   }
 
   .dark {
-    /* Dark mode - Default (refined teal aesthetic) */
+    /* Dark mode - refined teal aesthetic (default) */
     --background: 220 20% 8%;
     --foreground: 40 15% 95%;
     --card: 220 18% 11%;
     --card-foreground: 40 15% 95%;
     --popover: 220 18% 11%;
     --popover-foreground: 40 15% 95%;
-    
-    /* Teal primary - signature color */
     --primary: 172 45% 50%;
     --primary-foreground: 220 20% 8%;
-    
     --secondary: 220 15% 18%;
     --secondary-foreground: 40 15% 90%;
     --muted: 220 15% 16%;
     --muted-foreground: 40 10% 60%;
-    
-    /* Warm accent */
     --accent: 25 65% 55%;
     --accent-foreground: 220 20% 8%;
-    
     --destructive: 0 55% 45%;
     --destructive-foreground: 40 15% 95%;
     --border: 220 15% 26%;
@@ -65,9 +57,20 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', sans-serif;
+    @apply tracking-tight;
   }
 }
