@@ -4,81 +4,62 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* EMGurus Hub - Career-Guru Design System (Tailwind v4 + Shadcn) */
 
-@theme {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
-  --radius: 0.5rem;
+@layer base {
+  :root {
+    /* Light mode fallback - not used (dark mode default) */
+    --background: 40 20% 98%;
+    --foreground: 220 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+    --primary: 172 50% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 15% 94%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 40 10% 92%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 25 70% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 172 50% 35%;
+    --radius: 0.5rem;
+  }
 
-  /* EMGurus brand — refined teal, career-guru aesthetic */
-  --color-background: #0f1114;
-  --color-foreground: #f0ede8;
-  --color-card: #161920;
-  --color-card-foreground: #f0ede8;
-  --color-popover: #161920;
-  --color-popover-foreground: #f0ede8;
-  --color-primary: #2ba39b;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #1c1f28;
-  --color-secondary-foreground: #e0ddd6;
-  --color-muted: #1c1f28;
-  --color-muted-foreground: #8a8a96;
-  --color-accent: #d0792e;
-  --color-accent-foreground: #ffffff;
-  --color-destructive: #dc4545;
-  --color-destructive-foreground: #ffffff;
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-input: rgba(255, 255, 255, 0.08);
-  --color-ring: #2ba39b;
-  --color-success: #2d9b6e;
-  --color-success-foreground: #ffffff;
-  --color-warning: #d4982e;
-  --color-warning-foreground: #ffffff;
+  .dark {
+    /* Dark mode - Default (refined teal aesthetic) */
+    --background: 220 20% 8%;
+    --foreground: 40 15% 95%;
+    --card: 220 18% 11%;
+    --card-foreground: 40 15% 95%;
+    --popover: 220 18% 11%;
+    --popover-foreground: 40 15% 95%;
+    
+    /* Teal primary - signature color */
+    --primary: 172 45% 50%;
+    --primary-foreground: 220 20% 8%;
+    
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 40 15% 90%;
+    --muted: 220 15% 16%;
+    --muted-foreground: 40 10% 60%;
+    
+    /* Warm accent */
+    --accent: 25 65% 55%;
+    --accent-foreground: 220 20% 8%;
+    
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 40 15% 95%;
+    --border: 220 15% 26%;
+    --input: 220 15% 26%;
+    --ring: 172 45% 50%;
+  }
 }
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-/* OKLCH overrides removed - using custom teal design system from @theme above */
 
 @layer base {
   * {
