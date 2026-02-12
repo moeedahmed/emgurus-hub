@@ -331,7 +331,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
                     <BlogCard
                       key={p.id}
                       post={p}
-                      onOpen={() => navigate(`/blogs/${p.slug}`)}
+                      onOpen={() => navigate(`/blog/${p.slug}`)}
                       topBadge={topByCat.has(p.id) ? { label: 'Most Liked' } : null}
                       selectedCategory={category}
                       selectedTag={tag}

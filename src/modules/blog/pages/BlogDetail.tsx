@@ -64,7 +64,7 @@ export default function BlogDetail() {
           canonical.setAttribute("rel", "canonical");
           document.head.appendChild(canonical);
         }
-        canonical.setAttribute("href", `${window.location.origin}/blogs/${slug}`);
+        canonical.setAttribute("href", `${window.location.origin}/blog/${slug}`);
       } catch (e: any) {
         toast.error(e.message || "Failed to load post");
       } finally {
@@ -214,11 +214,11 @@ export default function BlogDetail() {
         <nav className="text-sm text-muted-foreground mb-8">
           <button className="hover:underline" onClick={() => navigate('/')}>Home</button>
           <span className="mx-2">›</span>
-          <button className="hover:underline" onClick={() => navigate('/blogs')}>Blogs</button>
+          <button className="hover:underline" onClick={() => navigate('/blog')}>Blogs</button>
           {p.category?.title && !/^imported$/i.test(p.category.title) && (
             <>
               <span className="mx-2">›</span>
-              <button className="hover:underline" onClick={() => navigate(`/blogs?category=${encodeURIComponent(p.category.title)}`)}>{p.category.title}</button>
+              <button className="hover:underline" onClick={() => navigate(`/blog?category=${encodeURIComponent(p.category.title)}`)}>{p.category.title}</button>
             </>
           )}
           <span className="mx-2">›</span>

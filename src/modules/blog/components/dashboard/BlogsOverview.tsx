@@ -69,7 +69,7 @@ export default function BlogsOverview() {
           </div>
         </div>
         <TrendCard title={`Updates (${range}d)`} series={series} rangeLabel={`Last ${range} days`} isLoading={loading} />
-        <div className="text-sm text-muted-foreground mt-2">No complex charts here. <a className="underline" href="/blogs">Go to Blogs</a></div>
+        <div className="text-sm text-muted-foreground mt-2">No complex charts here. <a className="underline" href="/blog">Go to Blogs</a></div>
       </div>
     </div>
   );

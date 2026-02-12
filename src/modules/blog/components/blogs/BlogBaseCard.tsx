@@ -132,7 +132,7 @@ export default function BlogBaseCard({
             )}
             {date && <span className="text-xs text-muted-foreground">{date}</span>}
           </div>
-          <Link to={`/blogs/${slug}`}>
+          <Link to={`/blog/${slug}`}>
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold max-w-3xl mb-2 group-hover:text-primary motion-safe:transition-colors">
               {title}
             </h3>
@@ -147,7 +147,7 @@ export default function BlogBaseCard({
               <AuthorChip id={author.id} name={author.name} avatar={author.avatar || null} />
             )}
             <Button asChild size="sm" variant="secondary" className="ml-auto">
-              <Link to={`/blogs/${slug}`}>Read Article</Link>
+              <Link to={`/blog/${slug}`}>Read Article</Link>
             </Button>
           </div>
           {/* Engagement Bar for Hero */}
@@ -200,7 +200,7 @@ export default function BlogBaseCard({
 
   // Regular card layout
   return (
-    <Link to={`/blogs/${slug}`} className="block">
+    <Link to={`/blog/${slug}`} className="block">
       <Card className={cn(
         "overflow-hidden group hover-scale motion-safe:transition-all motion-safe:duration-200",
         className

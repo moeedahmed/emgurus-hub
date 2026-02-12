@@ -243,7 +243,7 @@ def rewrite_html_and_upload_assets(
         if href_clean.lower().endswith(".html"):
             internal_name = PurePosixPath(href_clean).name
             internal_slug = slugify(internal_name)
-            a["href"] = f"/blogs/{internal_slug}"
+            a["href"] = f"/blog/{internal_slug}"
 
     return str(soup), first_image_url
 
