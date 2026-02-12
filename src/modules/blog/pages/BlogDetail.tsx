@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { getBlog, toggleLike, trackShare } from "@/modules/blog/lib/blogsApi";
 import { Card } from "@/components/ui/card";
@@ -30,7 +30,9 @@ export default function BlogDetail() {
   const [userLiked, setUserLiked] = useState(false);
   const [liking, setLiking] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>([]);
+  const [activeSection, setActiveSection] = useState<string>("");
   const [readingProgress, setReadingProgress] = useState(0);
+  const scrollRaf = useRef<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -137,22 +139,54 @@ export default function BlogDetail() {
   useEffect(() => {
     if (!contentSections.sections.length) {
       setOpenSections([]);
+      setActiveSection("");
       return;
     }
-    setOpenSections([contentSections.sections[0].id]);
+    const first = contentSections.sections[0].id;
+    setOpenSections([first]);
+    setActiveSection(first);
   }, [contentSections.sections]);
 
   useEffect(() => {
+    if (!contentSections.sections.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (!visible.length) return;
+        const nextId = visible[0].target.getAttribute("id") || "";
+        if (nextId) setActiveSection(nextId);
+      },
+      { rootMargin: "-25% 0px -60% 0px", threshold: [0.1, 0.35, 0.6] }
+    );
+
+    for (const section of contentSections.sections) {
+      const el = document.getElementById(section.id);
+      if (el) observer.observe(el);
+    }
+
+    return () => observer.disconnect();
+  }, [contentSections.sections, openSections]);
+
+  useEffect(() => {
     const onScroll = () => {
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - window.innerHeight;
-      const progress = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
-      setReadingProgress(progress);
+      if (scrollRaf.current != null) return;
+      scrollRaf.current = window.requestAnimationFrame(() => {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - window.innerHeight;
+        const progress = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+        setReadingProgress(progress);
+        scrollRaf.current = null;
+      });
     };
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollRaf.current != null) window.cancelAnimationFrame(scrollRaf.current);
+    };
   }, []);
 
   const handleLike = async () => {
@@ -301,13 +335,13 @@ export default function BlogDetail() {
       </div>
 
       {/* Article content — collapsible for better scanability */}
-      <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-        <div className="rounded-2xl border border-border/60 bg-card/20 p-5 sm:p-7">
+      <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+        <div className="rounded-2xl border border-border/60 bg-card/20 p-4 sm:p-6 lg:p-7">
           <style>{`
             .blog-content { font-family: inherit; line-height: 1.9; color: hsl(var(--foreground)); font-size: 1.025rem; }
             .blog-content h1 { font-size: 1.9rem; font-weight: 700; margin: 2.2rem 0 1rem; letter-spacing: -0.01em; font-family: inherit !important; }
-            .blog-content h2 { font-size: 1.55rem; font-weight: 650; margin: 1.9rem 0 0.85rem; letter-spacing: -0.01em; font-family: inherit !important; }
-            .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.65rem 0 0.6rem; color: hsl(var(--primary)); font-family: inherit !important; }
+            .blog-content h2 { font-size: 1.55rem; font-weight: 650; margin: 1.9rem 0 0.85rem; letter-spacing: -0.01em; color: hsl(var(--foreground)); font-family: inherit !important; }
+            .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.65rem 0 0.6rem; color: hsl(var(--primary)); text-wrap: balance; font-family: inherit !important; }
             .blog-content p { margin-bottom: 1.1rem; font-family: inherit !important; }
             .blog-content ul, .blog-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
             .blog-content li { margin-bottom: 0.5rem; }
@@ -324,15 +358,15 @@ export default function BlogDetail() {
           `}</style>
 
           {contentSections.sections.length > 0 && (
-            <div className="mb-5 space-y-3">
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+            <div className="mb-4 space-y-3 lg:hidden">
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                  <p className="text-xs font-semibold tracking-wide uppercase text-muted-foreground">On this page</p>
-                  <div className="flex gap-2">
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-muted-foreground">On this page</p>
+                  <div className="flex gap-1.5">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 text-xs"
+                      className="h-7 text-[11px] px-2"
                       onClick={() => setOpenSections(contentSections.sections.map((s) => s.id))}
                     >
                       Expand all
@@ -340,21 +374,26 @@ export default function BlogDetail() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 text-xs"
+                      className="h-7 text-[11px] px-2"
                       onClick={() => setOpenSections([])}
                     >
-                      Collapse all
+                      Collapse
                     </Button>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
                   {contentSections.sections.map((s) => (
                     <Button
                       key={s.id}
                       size="sm"
                       variant="ghost"
-                      className={cn("h-7 px-2 text-xs", s.level === 3 && "opacity-80")}
+                      className={cn(
+                        "h-7 shrink-0 px-2 text-xs border border-transparent",
+                        s.level === 3 && "opacity-80",
+                        activeSection === s.id && "border-primary/35 bg-primary/10 text-primary"
+                      )}
                       onClick={() => {
+                        setActiveSection(s.id);
                         setOpenSections((prev) => (prev.includes(s.id) ? prev : [...prev, s.id]));
                         document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
                       }}
@@ -367,7 +406,7 @@ export default function BlogDetail() {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-3 mb-5">
+          <div className="grid gap-2.5 sm:grid-cols-3 mb-4">
             <div className="rounded-lg border border-border/60 bg-muted/15 p-3">
               <div className="text-xs text-muted-foreground">Read time</div>
               <div className="font-semibold">{readTime} min</div>
@@ -382,41 +421,80 @@ export default function BlogDetail() {
             </div>
           </div>
 
-          {contentSections.intro && (
-            <div className="blog-content mb-4" dangerouslySetInnerHTML={{ __html: contentSections.intro }} />
-          )}
+          <div className={cn(contentSections.sections.length > 0 && "lg:grid lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-5")}>
+            <div className="min-w-0">
+              {contentSections.intro && (
+                <div className="blog-content mb-4" dangerouslySetInnerHTML={{ __html: contentSections.intro }} />
+              )}
 
-          {contentSections.sections.length > 0 ? (
-            <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-3">
-              {contentSections.sections.map((section) => (
-                <AccordionItem key={section.id} value={section.id} id={section.id} className="rounded-xl border border-border/60 px-4">
-                  <div className="flex items-center gap-2">
-                    <AccordionTrigger className="text-left py-4 hover:no-underline">
-                      <span className={cn("font-semibold", section.level === 3 && "text-base text-muted-foreground")}>{section.title}</span>
-                    </AccordionTrigger>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        copySectionLink(section.id);
-                      }}
-                      aria-label={`Copy link to ${section.title}`}
-                    >
-                      <Link2 className="h-4 w-4" />
-                    </Button>
+              {contentSections.sections.length > 0 ? (
+                <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-2.5">
+                  {contentSections.sections.map((section) => (
+                    <AccordionItem key={section.id} value={section.id} id={section.id} className="rounded-xl border border-border/60 px-3 sm:px-4">
+                      <div className="flex items-center gap-2">
+                        <AccordionTrigger className="text-left py-3.5 hover:no-underline">
+                          <span
+                            className={cn(
+                              "font-semibold tracking-tight text-foreground/95",
+                              section.level === 2 && "text-[1.08rem]",
+                              section.level === 3 && "text-[0.98rem] text-primary/90"
+                            )}
+                          >
+                            {section.title}
+                          </span>
+                        </AccordionTrigger>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            copySectionLink(section.id);
+                          }}
+                          aria-label={`Copy link to ${section.title}`}
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <AccordionContent>
+                        <div className="blog-content pb-4" dangerouslySetInnerHTML={{ __html: section.html }} />
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              ) : (
+                <div className="blog-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+              )}
+            </div>
+
+            {contentSections.sections.length > 0 && (
+              <aside className="hidden lg:block">
+                <div className="sticky top-20 rounded-xl border border-border/60 bg-muted/15 p-3">
+                  <p className="text-[11px] font-semibold tracking-wide uppercase text-muted-foreground mb-2">On this page</p>
+                  <div className="space-y-1.5">
+                    {contentSections.sections.map((s) => (
+                      <button
+                        key={`desktop-${s.id}`}
+                        onClick={() => {
+                          setActiveSection(s.id);
+                          setOpenSections((prev) => (prev.includes(s.id) ? prev : [...prev, s.id]));
+                          document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                        className={cn(
+                          "w-full rounded-md px-2.5 py-2 text-left text-xs transition-colors",
+                          s.level === 3 && "pl-5",
+                          activeSection === s.id ? "bg-primary/12 text-primary" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        )}
+                      >
+                        {s.title}
+                      </button>
+                    ))}
                   </div>
-                  <AccordionContent>
-                    <div className="blog-content pb-4" dangerouslySetInnerHTML={{ __html: section.html }} />
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          ) : (
-            <div className="blog-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
-          )}
+                </div>
+              </aside>
+            )}
+          </div>
         </div>
       </article>
 
