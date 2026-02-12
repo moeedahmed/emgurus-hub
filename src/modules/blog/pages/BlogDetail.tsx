@@ -12,6 +12,7 @@ import ShareButtons from "@/modules/blog/components/blogs/ShareButtons";
 import CommentThread from "@/modules/blog/components/blogs/CommentThread";
 import ReportIssueModal from "@/modules/blog/components/blogs/ReportIssueModal";
 import BlogBreadcrumbs from "@/modules/blog/components/blogs/BlogBreadcrumbs";
+import { getCategoryColor } from "@/modules/blog/lib/taxonomy";
 import DOMPurify from "dompurify";
 
 export default function BlogDetail() {
@@ -167,7 +168,7 @@ export default function BlogDetail() {
         {displayCategory && (
           <button
             onClick={() => navigate(`/blog?category=${encodeURIComponent(displayCategory)}`)}
-            className="text-xs font-medium text-primary hover:underline mb-3 block"
+            className={`text-xs font-medium hover:underline mb-3 block ${getCategoryColor(displayCategory)}`}
           >
             {displayCategory}
           </button>

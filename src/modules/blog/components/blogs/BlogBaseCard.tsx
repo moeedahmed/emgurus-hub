@@ -6,6 +6,7 @@ import { Chip } from "@/components/ui/chip";
 import AuthorChip from "@/modules/blog/components/blogs/AuthorChip";
 import { Eye, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getCategoryColor } from "@/modules/blog/lib/taxonomy";
 
 interface EngagementCounts {
   views?: number;
@@ -179,7 +180,7 @@ export default function BlogBaseCard({
         {/* Category and Date */}
         <div className="flex items-center gap-2 mb-2 flex-wrap text-xs text-muted-foreground">
           {displayCategory && (
-            <span className="font-medium text-primary">{displayCategory}</span>
+            <span className={cn("font-medium", getCategoryColor(displayCategory))}>{displayCategory}</span>
           )}
           {displayCategory && date && <span>·</span>}
           {date && <span>{date}</span>}
