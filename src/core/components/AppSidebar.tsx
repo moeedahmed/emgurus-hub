@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/core/auth/AuthProvider';
 import { useAdmin } from '@/core/hooks/useAdmin';
 import type { LucideIcon } from 'lucide-react';
+import BlogSidebarTopAuthors from '@/modules/blog/components/blogs/BlogSidebarTopAuthors';
 
 interface NavItem {
   to: string;
@@ -112,6 +113,18 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+        )}
+
+        {activeModule === 'blog' && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup className="group-data-[collapsible=icon]:hidden px-2">
+              <SidebarGroupLabel>Highlights</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <BlogSidebarTopAuthors />
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
         )}
 
         {/* Hub navigation — always shown, but as secondary when inside a module */}

@@ -268,8 +268,8 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
           </div>
 
           {/* Main content */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <section className="lg:col-span-8">
+          <div>
+          <section>
             {/* Featured posts carousel */}
             {featuredItems.length > 0 && (
               <div className="mb-8">
@@ -322,7 +322,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
 
             <div className="space-y-4 sm:space-y-6">
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-center max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <Card key={i} className="h-72 animate-pulse" />
                   ))}
@@ -333,7 +333,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
                   <p className="text-muted-foreground">New articles are published regularly—check back soon.</p>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-center max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                   {items.map((p) => (
                     <BlogCard
                       key={p.id}
@@ -382,13 +382,6 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
               
             </div>
           </section>
-          
-          {/* Right sidebar - Top Authors */}
-          <aside className="lg:col-span-4 hidden lg:block">
-            <div className="lg:sticky lg:top-20">
-              <TopAuthorsPanel authors={topAuthors} />
-            </div>
-          </aside>
           </div>
         </div>
       </section>
