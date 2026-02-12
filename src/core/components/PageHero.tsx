@@ -22,10 +22,9 @@ const PageHero = ({ title, subtitle, align = "left", eyebrow, ctas = [], classNa
   const isCenter = align === "center";
 
   return (
-    <header
+    <section
       className={cn(
-        "relative overflow-hidden border-b border-border/40",
-        "py-10 sm:py-14 lg:py-16 animate-fade-in",
+        "py-8 sm:py-10 animate-fade-in",
         className
       )}
     >
@@ -66,8 +65,7 @@ const PageHero = ({ title, subtitle, align = "left", eyebrow, ctas = [], classNa
           </div>
         )}
       </div>
-      <span className="pointer-events-none absolute -top-10 right-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
-    </header>
+    </section>
   );
 };
 
