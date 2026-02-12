@@ -160,6 +160,8 @@ export default function BlogBaseCard({
             className="w-full h-44 object-cover"
             loading="lazy"
             decoding="async"
+            fetchPriority="low"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
             onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
           />
         ) : (
@@ -187,24 +189,24 @@ export default function BlogBaseCard({
         </div>
         
         {/* Title */}
-        <h3 className="font-semibold text-base mb-2 line-clamp-2 group-hover:text-primary motion-safe:transition-colors">
+        <h3 className="font-semibold text-lg leading-snug mb-2.5 line-clamp-2 group-hover:text-primary motion-safe:transition-colors">
           {title}
         </h3>
-        
+
         {/* Excerpt */}
         {excerpt && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">
+          <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3 mb-4 flex-1">
             {excerpt}
           </p>
         )}
-        
+
         {/* Author */}
         {author && (
-          <div className="mb-2">
-            <AuthorChip 
-              id={author.id} 
-              name={author.name} 
-              avatar={author.avatar || null} 
+          <div className="mb-2 mt-auto">
+            <AuthorChip
+              id={author.id}
+              name={author.name}
+              avatar={author.avatar || null}
             />
           </div>
         )}

@@ -237,34 +237,36 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="space-y-8">
           {/* Top search & filter bar */}
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input className="pl-9" value={q} onChange={(e) => setParam("q", e.target.value)} placeholder="Search blogs..." />
+          <div className="rounded-xl border border-border/70 bg-card/25 p-3 sm:p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_180px_160px] gap-3 items-center">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input className="pl-9" value={q} onChange={(e) => setParam("q", e.target.value)} placeholder="Search blogs..." />
+              </div>
+              <Select value={category || "__all__"} onValueChange={(v) => setParam("category", v === "__all__" ? "" : v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  <SelectItem value="__all__">All Categories</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.title} value={c.title}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sort} onValueChange={(v) => setParam("sort", v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="liked">Most Liked</SelectItem>
+                  <SelectItem value="discussed">Most Discussed</SelectItem>
+                  <SelectItem value="editors">Editor's Picks</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={category || "__all__"} onValueChange={(v) => setParam("category", v === "__all__" ? "" : v)}>
-              <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent className="z-50">
-                <SelectItem value="__all__">All Categories</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.title} value={c.title}>{c.title}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={sort} onValueChange={(v) => setParam("sort", v)}>
-              <SelectTrigger className="w-full sm:w-[150px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-50">
-                <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="liked">Most Liked</SelectItem>
-                <SelectItem value="discussed">Most Discussed</SelectItem>
-                <SelectItem value="editors">Editor's Picks</SelectItem>
-                <SelectItem value="featured">Featured</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Main content */}

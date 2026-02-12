@@ -216,12 +216,12 @@ export default function BlogDetail() {
 
       {/* Article content — continuous prose, no accordions */}
       <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
-        <style>{`
-          .blog-content { font-family: inherit; line-height: 1.8; color: hsl(var(--foreground)); }
-          .blog-content h1 { font-size: 1.75rem; font-weight: 700; margin: 2rem 0 1rem; font-family: inherit !important; }
-          .blog-content h2 { font-size: 1.5rem; font-weight: 600; margin: 1.75rem 0 0.75rem; font-family: inherit !important; }
-          .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: hsl(var(--primary)); font-family: inherit !important; }
-          .blog-content p { margin-bottom: 1rem; font-family: inherit !important; }
+        <div className="rounded-2xl border border-border/60 bg-card/20 p-5 sm:p-7">        <style>{`
+          .blog-content { font-family: inherit; line-height: 1.9; color: hsl(var(--foreground)); font-size: 1.025rem; }
+          .blog-content h1 { font-size: 1.9rem; font-weight: 700; margin: 2.2rem 0 1rem; letter-spacing: -0.01em; font-family: inherit !important; }
+          .blog-content h2 { font-size: 1.55rem; font-weight: 650; margin: 1.9rem 0 0.85rem; letter-spacing: -0.01em; font-family: inherit !important; }
+          .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.65rem 0 0.6rem; color: hsl(var(--primary)); font-family: inherit !important; }
+          .blog-content p { margin-bottom: 1.1rem; font-family: inherit !important; }
           .blog-content ul, .blog-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
           .blog-content li { margin-bottom: 0.5rem; }
           .blog-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5rem 0; }
@@ -239,6 +239,7 @@ export default function BlogDetail() {
           className="blog-content"
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
+        </div>
       </article>
 
       {/* Action bar */}

@@ -18,10 +18,32 @@ export default function BlogSidebarTopAuthors() {
   useEffect(() => {
     let cancelled = false;
 
+    const CACHE_KEY = "blog-sidebar-top-authors-cache";
+    const CACHE_TTL_MS = 10 * 60 * 1000;
+
     const load = async () => {
       try {
-        const res = await listBlogs({ status: "published", page: 1, page_size: 60, sort: "newest" });
-        if (!cancelled) setItems(res.items || []);
+        const raw = sessionStorage.getItem(CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as { ts: number; items: any[] };
+          if (Date.now() - parsed.ts < CACHE_TTL_MS && Array.isArray(parsed.items)) {
+            if (!cancelled) setItems(parsed.items);
+            return;
+          }
+        }
+      } catch {
+        // ignore cache errors
+      }
+
+      try {
+        const res = await listBlogs({ status: "published", page: 1, page_size: 24, sort: "newest" });
+        const nextItems = res.items || [];
+        if (!cancelled) setItems(nextItems);
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items: nextItems }));
+        } catch {
+          // ignore cache write errors
+        }
       } catch {
         if (!cancelled) setItems([]);
       }
