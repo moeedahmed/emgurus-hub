@@ -335,10 +335,11 @@ export default function BlogDetail() {
       </div>
 
       {/* Article content — collapsible for better scanability */}
-      <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        <div className="rounded-2xl border border-border/60 bg-card/20 p-4 sm:p-6 lg:p-7">
+      <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-5xl">
+        <div className="rounded-2xl border border-border/60 bg-card/20 p-3 sm:p-5 lg:p-7 overflow-hidden">
           <style>{`
-            .blog-content { font-family: inherit; line-height: 1.9; color: hsl(var(--foreground)); font-size: 1.025rem; }
+            .blog-content { font-family: inherit; line-height: 1.8; color: hsl(var(--foreground)); font-size: 0.95rem; overflow-wrap: break-word; word-break: break-word; }
+            @media (min-width: 640px) { .blog-content { font-size: 1.025rem; line-height: 1.9; } }
             .blog-content h1 { font-size: 1.9rem; font-weight: 700; margin: 2.2rem 0 1rem; letter-spacing: -0.01em; font-family: inherit !important; }
             .blog-content h2 { font-size: 1.55rem; font-weight: 650; margin: 1.9rem 0 0.85rem; letter-spacing: -0.01em; color: hsl(var(--foreground)); font-family: inherit !important; }
             .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.65rem 0 0.6rem; color: hsl(var(--primary)); text-wrap: balance; font-family: inherit !important; }
@@ -349,7 +350,7 @@ export default function BlogDetail() {
             .blog-content a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
             .blog-content a:hover { opacity: 0.8; }
             .blog-content blockquote { border-left: 3px solid hsl(var(--primary)); padding-left: 1rem; margin: 1.5rem 0; color: hsl(var(--muted-foreground)); font-style: italic; }
-            .blog-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+            .blog-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; display: block; overflow-x: auto; }
             .blog-content th, .blog-content td { border: 1px solid hsl(var(--border)); padding: 0.5rem 0.75rem; text-align: left; }
             .blog-content th { background: hsl(var(--muted)); font-weight: 600; }
             .blog-content span { font-family: inherit !important; }
@@ -406,18 +407,18 @@ export default function BlogDetail() {
             </div>
           )}
 
-          <div className="grid gap-2.5 sm:grid-cols-3 mb-4">
-            <div className="rounded-lg border border-border/60 bg-muted/15 p-3">
-              <div className="text-xs text-muted-foreground">Read time</div>
-              <div className="font-semibold">{readTime} min</div>
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mb-4">
+            <div className="rounded-lg border border-border/60 bg-muted/15 p-2 sm:p-3">
+              <div className="text-[10px] sm:text-xs text-muted-foreground">Read time</div>
+              <div className="text-sm sm:text-base font-semibold">{readTime} min</div>
             </div>
-            <div className="rounded-lg border border-border/60 bg-muted/15 p-3">
-              <div className="text-xs text-muted-foreground">Sections</div>
-              <div className="font-semibold">{Math.max(1, contentSections.sections.length)}</div>
+            <div className="rounded-lg border border-border/60 bg-muted/15 p-2 sm:p-3">
+              <div className="text-[10px] sm:text-xs text-muted-foreground">Sections</div>
+              <div className="text-sm sm:text-base font-semibold">{Math.max(1, contentSections.sections.length)}</div>
             </div>
-            <div className="rounded-lg border border-border/60 bg-muted/15 p-3">
-              <div className="text-xs text-muted-foreground">Best for</div>
-              <div className="font-semibold">Focused revision</div>
+            <div className="rounded-lg border border-border/60 bg-muted/15 p-2 sm:p-3">
+              <div className="text-[10px] sm:text-xs text-muted-foreground">Best for</div>
+              <div className="text-sm sm:text-base font-semibold">Focused revision</div>
             </div>
           </div>
 
@@ -430,7 +431,7 @@ export default function BlogDetail() {
               {contentSections.sections.length > 0 ? (
                 <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-2.5">
                   {contentSections.sections.map((section) => (
-                    <AccordionItem key={section.id} value={section.id} id={section.id} className="rounded-xl border border-border/60 px-3 sm:px-4">
+                    <AccordionItem key={section.id} value={section.id} id={section.id} className="rounded-xl border border-border/60 px-2.5 sm:px-4 overflow-hidden">
                       <div className="flex items-center gap-2">
                         <AccordionTrigger className="text-left py-3.5 hover:no-underline">
                           <span
