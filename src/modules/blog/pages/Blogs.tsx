@@ -33,6 +33,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
   const author = searchParams.get("author") || "";
   const sort = searchParams.get("sort") || "newest";
   const tag = searchParams.get("tag") || "";
+  const section = searchParams.get("section") || "";
   const page = Number(searchParams.get("page") || 1);
 
   const setParam = (k: string, v: string) => {
@@ -139,6 +140,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
           author: author || undefined,
           tag: tag || undefined,
           sort: sort || undefined,
+          section: section || undefined,
           page,
           page_size: 12
         });
@@ -156,7 +158,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
       }
     };
     load();
-  }, [q, category, author, tag, sort, page]);
+  }, [q, category, author, tag, sort, section, page]);
 
   const categories = useMemo(() => {
     const map = new Map<string, number>();
@@ -224,7 +226,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
       {!embedded && (
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="heading-xl">Blog</h1>
+            <h1 className="heading-xl">{section || "Blog"}</h1>
             <Button asChild>
               <Link to="/blog/editor/new">Write Blog</Link>
             </Button>
@@ -282,8 +284,13 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
             
             <div className="mb-4 space-y-3">
               {/* Active filters row */}
-              {(category || tag || author || sort !== 'newest') && (
+              {(category || tag || author || section || sort !== 'newest') && (
                 <div className="flex flex-wrap items-center gap-2">
+                  {section && (
+                    <Chip name="blogs_active_section" value={section} selected variant="solid" size="sm" onSelect={() => setParam('section','')}>
+                      📁 {section} ×
+                    </Chip>
+                  )}
                   {category && (
                     <Chip name="blogs_active_category" value={category} selected variant="solid" size="sm" onSelect={() => setParam('category','')}>
                       {category} ×

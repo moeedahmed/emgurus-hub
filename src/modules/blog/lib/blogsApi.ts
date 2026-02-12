@@ -79,6 +79,7 @@ export async function listBlogs(params: {
   page?: number;
   page_size?: number;
   featured?: boolean;
+  section?: string;
 }): Promise<{ items: BlogListItem[]; page: number; page_size: number; total: number }> {
   const qs = new URLSearchParams();
   if (params.status) qs.set("status", params.status);
@@ -102,10 +103,11 @@ export async function listBlogs(params: {
 
     let query = supabase
       .from("blog_posts")
-      .select("id, title, slug, description, cover_image_url, category_id, author_id, status, view_count, created_at, is_featured")
+      .select("id, title, slug, description, cover_image_url, category_id, author_id, status, view_count, created_at, is_featured, breadcrumb_path, parent_slug")
       .eq("status", status);
     
     if (params.featured) query = query.eq("is_featured", true);
+    if (params.section) query = query.contains("breadcrumb_path", [params.section]);
 
     const { data: rawPosts, error } = await query
       .order("created_at", { ascending: false })
@@ -120,6 +122,7 @@ export async function listBlogs(params: {
       .eq("status", status);
     
     if (params.featured) countQuery = countQuery.eq("is_featured", true);
+    if (params.section) countQuery = countQuery.contains("breadcrumb_path", [params.section]);
     
     const { count } = await countQuery;
 
