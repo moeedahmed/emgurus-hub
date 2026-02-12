@@ -308,9 +308,8 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
                 </div>
               )}
             </div>
-            {/* Header with count */}
+            {/* Post count */}
             <div className="mb-6">
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl mb-2">Blogs</h1>
               <p className="text-sm text-muted-foreground">Showing {pagination.total} posts</p>
             </div>
 

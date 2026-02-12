@@ -219,12 +219,15 @@ export default function EditorNew() {
                       placeholder="https://example.com/image.jpg" 
                       className="py-3"
                     />
-                    <Input 
-                      type="file" 
-                      accept="image/*" 
-                      className="py-3"
-                      onChange={(e) => onCoverFileChange(e.target.files?.[0])} 
-                    />
+                    <label className="flex items-center gap-2 px-4 py-3 rounded-md border border-border bg-background hover:bg-accent/50 cursor-pointer transition-colors text-sm text-muted-foreground">
+                      <span>📷 Upload cover image</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="sr-only"
+                        onChange={(e) => onCoverFileChange(e.target.files?.[0])} 
+                      />
+                    </label>
                     {cover && (
                       <img
                         src={cover}

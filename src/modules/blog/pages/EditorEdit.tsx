@@ -250,11 +250,13 @@ export default function EditorEdit() {
                       placeholder="https://example.com/image.jpg" 
                       className="py-3"
                     />
-                    <Input 
-                      type="file" 
-                      accept="image/*" 
-                      className="py-3"
-                      onChange={async (e) => {
+                    <label className="flex items-center gap-2 px-4 py-3 rounded-md border border-border bg-background hover:bg-accent/50 cursor-pointer transition-colors text-sm text-muted-foreground">
+                      <span>📷 Upload cover image</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="sr-only"
+                        onChange={async (e) => {
                         const f = e.target.files?.[0];
                         if (!f || !user) return;
                         try {
@@ -272,7 +274,8 @@ export default function EditorEdit() {
                           setLoading(false);
                         }
                       }} 
-                    />
+                      />
+                    </label>
                     {cover && (
                       <img
                         src={cover}

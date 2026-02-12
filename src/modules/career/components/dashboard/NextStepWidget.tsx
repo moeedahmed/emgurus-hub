@@ -106,7 +106,7 @@ export function NextStepWidget({ className, goals: propGoals, isLoading: propLoa
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -5 }}
-                className={cn("group bg-card border border-border rounded-xl p-6 shadow-sm hover:border-primary/30 transition-all duration-300 flex flex-col", className)}
+                className={cn("group bg-card border border-border rounded-xl p-6 shadow-sm hover:border-primary/30 transition-all duration-300 flex flex-col overflow-hidden", className)}
             >
                 <div className="flex items-center gap-2 mb-6">
                     <div className="p-2 bg-primary/10 rounded-lg">
