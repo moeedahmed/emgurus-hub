@@ -29,7 +29,7 @@ export default function Exams() {
         </div>
 
         {/* Mode cards */}
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* AI Mode */}
           <Card className="relative overflow-hidden group hover:shadow-strong transition-all duration-300 bg-gradient-card border-0 flex flex-col h-full">
             <div className="p-6 flex flex-col h-full">
