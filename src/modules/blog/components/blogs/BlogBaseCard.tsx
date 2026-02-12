@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Chip } from "@/components/ui/chip";
 import AuthorChip from "@/modules/blog/components/blogs/AuthorChip";
-import { Eye, ThumbsUp, MessageCircle, Share2, Flag } from "lucide-react";
+import { Eye, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface EngagementCounts {
@@ -68,32 +68,20 @@ export default function BlogBaseCard({
   onCategoryClick
 }: BlogBaseCardProps) {
   const date = published_at ? new Date(published_at).toLocaleDateString() : "";
-  const readTime = excerpt ? Math.ceil(excerpt.split(' ').length / 200) : 1;
 
-  // Generate dynamic badges based on engagement
-  const generateBadges = () => {
-    const badges = [];
-    
-    if (isFeatured) {
-      badges.push({ label: "Featured", variant: "default" as const });
-    }
-    
-    if (topBadge) {
-      badges.push({ label: topBadge, variant: "secondary" as const });
-    }
-    
-    if (counts?.likes && counts.likes > 50) {
-      badges.push({ label: "Most Liked", variant: "secondary" as const });
-    }
-    
-    if (counts?.comments && counts.comments > 20) {
-      badges.push({ label: "Most Discussed", variant: "secondary" as const });
-    }
-    
-    return badges;
-  };
+  const badges = [];
+  if (isFeatured) badges.push({ label: "Featured", variant: "default" as const });
+  if (topBadge) badges.push({ label: topBadge, variant: "secondary" as const });
 
-  const badges = generateBadges();
+  // Only show engagement stats that have non-zero values
+  const hasEngagement = counts && (
+    (counts.views && counts.views > 0) ||
+    (counts.likes && counts.likes > 0) ||
+    (counts.comments && counts.comments > 0)
+  );
+
+  // Hide "Imported" category from display
+  const displayCategory = category?.title && !/^imported$/i.test(category.title) ? category.title : null;
 
   // Hero layout for featured single posts
   if (isHero) {
@@ -118,16 +106,16 @@ export default function BlogBaseCard({
                 {badge.label}
               </Badge>
             ))}
-            {category?.title && (
+            {displayCategory && (
               <Chip
-                name={category.title}
-                value={category.title}
+                name={displayCategory}
+                value={displayCategory}
                 selected={false}
-                onSelect={() => onCategoryClick?.(category.title!)}
+                onSelect={() => onCategoryClick?.(displayCategory)}
                 variant="outline"
                 size="sm"
               >
-                {category.title}
+                {displayCategory}
               </Chip>
             )}
             {date && <span className="text-xs text-muted-foreground">{date}</span>}
@@ -150,49 +138,6 @@ export default function BlogBaseCard({
               <Link to={`/blog/${slug}`}>Read Article</Link>
             </Button>
           </div>
-          {/* Engagement Bar for Hero */}
-          {counts && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t">
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
-                  <span>{counts.views || 0}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <ThumbsUp className="h-3 w-3" />
-                  <span>{counts.likes || 0}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MessageCircle className="h-3 w-3" />
-                  <span>{counts.comments || 0}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Share2 className="h-3 w-3" />
-                  <span>{counts.shares || 0}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Flag className="h-3 w-3" />
-                  <span>{counts.feedback || 0}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-6 w-6 p-0 hover:bg-accent/60 hover:scale-105 motion-safe:transition-all"
-                >
-                  <Share2 className="h-3 w-3" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="h-6 w-6 p-0 hover:bg-accent/60 hover:scale-105 motion-safe:transition-all"
-                >
-                  <Flag className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </Card>
     );
@@ -202,18 +147,25 @@ export default function BlogBaseCard({
   return (
     <Link to={`/blog/${slug}`} className="block">
       <Card className={cn(
-        "overflow-hidden group hover-scale motion-safe:transition-all motion-safe:duration-200",
+        "overflow-hidden group hover:shadow-lg motion-safe:transition-all motion-safe:duration-200 h-full flex flex-col",
         className
       )}>
+      {/* Cover image */}
       <div className="relative">
-        <img
-          src={cover_image_url || "/placeholder.svg"}
-          alt={`${title} cover image`}
-          className="w-full h-48 object-cover"
-          loading="lazy"
-          decoding="async"
-          onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-        />
+        {cover_image_url ? (
+          <img
+            src={cover_image_url}
+            alt={`${title} cover image`}
+            className="w-full h-44 object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
+          />
+        ) : (
+          <div className="w-full h-28 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent flex items-center justify-center">
+            <span className="text-3xl opacity-30">📝</span>
+          </div>
+        )}
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
           {badges.map((badge, index) => (
             <Badge key={index} variant={badge.variant} className="text-xs">
@@ -223,58 +175,31 @@ export default function BlogBaseCard({
         </div>
       </div>
       
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         {/* Category and Date */}
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          {category?.title && (
-            <Chip
-              name={category.title}
-              value={category.title}
-              selected={false}
-              onSelect={() => onCategoryClick?.(category.title!)}
-            >
-              {category.title}
-            </Chip>
+        <div className="flex items-center gap-2 mb-2 flex-wrap text-xs text-muted-foreground">
+          {displayCategory && (
+            <span className="font-medium text-primary">{displayCategory}</span>
           )}
-          {date && <span className="text-xs text-muted-foreground">{date}</span>}
-          <span className="text-xs text-muted-foreground">• {readTime} min read</span>
+          {displayCategory && date && <span>·</span>}
+          {date && <span>{date}</span>}
         </div>
         
         {/* Title */}
-        <h3 className="font-bold text-lg mb-2 line-clamp-2 group-hover:text-primary motion-safe:transition-colors">
+        <h3 className="font-semibold text-base mb-2 line-clamp-2 group-hover:text-primary motion-safe:transition-colors">
           {title}
         </h3>
         
         {/* Excerpt */}
         {excerpt && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">
             {excerpt}
           </p>
         )}
         
-        {/* Tags */}
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {tags.slice(0, 3).map((tag, index) => (
-              <Chip
-                key={index}
-                name={tag.title || tag.slug || ""}
-                value={tag.slug || tag.title || ""}
-                selected={false}
-                onSelect={() => onTagClick?.(tag.slug || tag.title || "")}
-              >
-                {tag.title || tag.slug}
-              </Chip>
-            ))}
-            {tags.length > 3 && (
-              <span className="text-xs text-muted-foreground">+{tags.length - 3} more</span>
-            )}
-          </div>
-        )}
-        
         {/* Author */}
         {author && (
-          <div className="mb-3">
+          <div className="mb-2">
             <AuthorChip 
               id={author.id} 
               name={author.name} 
@@ -283,47 +208,33 @@ export default function BlogBaseCard({
           </div>
         )}
         
-        {/* Engagement Bar */}
-        {counts && (
-          <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        {/* Engagement — only show if any non-zero values */}
+        {hasEngagement && (
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-auto pt-3 border-t">
+            {counts!.views! > 0 && (
               <div className="flex items-center gap-1">
                 <Eye className="h-3 w-3" />
-                <span>{counts.views || 0}</span>
+                <span>{counts!.views}</span>
               </div>
+            )}
+            {counts!.likes! > 0 && (
               <div className="flex items-center gap-1">
                 <ThumbsUp className="h-3 w-3" />
-                <span>{counts.likes || 0}</span>
+                <span>{counts!.likes}</span>
               </div>
+            )}
+            {counts!.comments! > 0 && (
               <div className="flex items-center gap-1">
                 <MessageCircle className="h-3 w-3" />
-                <span>{counts.comments || 0}</span>
+                <span>{counts!.comments}</span>
               </div>
+            )}
+            {counts!.shares! > 0 && (
               <div className="flex items-center gap-1">
                 <Share2 className="h-3 w-3" />
-                <span>{counts.shares || 0}</span>
+                <span>{counts!.shares}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Flag className="h-3 w-3" />
-                <span>{counts.feedback || 0}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-6 w-6 p-0 hover:bg-accent/60 hover:scale-105 motion-safe:transition-all"
-              >
-                <Share2 className="h-3 w-3" />
-              </Button>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                className="h-6 w-6 p-0 hover:bg-accent/60 hover:scale-105 motion-safe:transition-all"
-              >
-                <Flag className="h-3 w-3" />
-              </Button>
-            </div>
+            )}
           </div>
         )}
       </div>

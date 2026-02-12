@@ -298,6 +298,16 @@ export default function BlogDetail() {
               </div>
             </CollapsibleCard>
 
+            {/* Clean up imported Google Sites content */}
+            <style>{`
+              .prose h1, .prose h2, .prose h3 { font-family: inherit !important; }
+              .prose span { font-family: inherit !important; }
+              .prose p { font-family: inherit !important; }
+              .prose img { max-width: 100%; height: auto; border-radius: 0.5rem; }
+              .prose a { color: hsl(var(--primary)); text-decoration: underline; }
+              .prose ul, .prose ol { padding-left: 1.5rem; }
+            `}</style>
+
             {/* Content Sections */}
             {contentSections.map((section, index) => {
               if (section.type === 'media') {
