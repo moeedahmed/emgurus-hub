@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +68,7 @@ export default function BlogBaseCard({
   onTagClick,
   onCategoryClick
 }: BlogBaseCardProps) {
+  const navigate = useNavigate();
   const date = published_at ? new Date(published_at).toLocaleDateString() : "";
 
   const badges = [];
@@ -146,11 +147,21 @@ export default function BlogBaseCard({
 
   // Regular card layout
   return (
-    <Link to={`/blog/${slug}`} className="block">
-      <Card className={cn(
-        "overflow-hidden group hover:shadow-lg motion-safe:transition-all motion-safe:duration-200 h-full flex flex-col",
+    <Card
+      className={cn(
+        "overflow-hidden group hover:shadow-lg motion-safe:transition-all motion-safe:duration-200 h-full flex flex-col cursor-pointer",
         className
-      )}>
+      )}
+      role="link"
+      tabIndex={0}
+      onClick={() => navigate(`/blog/${slug}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/blog/${slug}`);
+        }
+      }}
+    >
       {/* Cover image */}
       <div className="relative">
         {cover_image_url ? (
@@ -202,7 +213,11 @@ export default function BlogBaseCard({
 
         {/* Author */}
         {author && (
-          <div className="mb-2 mt-auto">
+          <div
+            className="mb-2 mt-auto"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <AuthorChip
               id={author.id}
               name={author.name}
@@ -242,6 +257,5 @@ export default function BlogBaseCard({
         )}
       </div>
     </Card>
-    </Link>
   );
 }
