@@ -65,8 +65,14 @@ export default function CommentThread({
 
   useEffect(() => {
     setComments(initialComments);
+    setDeletedIds(new Set());
+    setReplyTo(null);
+    setText("");
+  }, [postId]);
+
+  useEffect(() => {
     loadComments();
-  }, [initialComments]);
+  }, [postId]);
 
   const loadComments = async () => {
     try {
@@ -359,6 +365,10 @@ export default function CommentThread({
                   </div>
                 </div>
               ))}
+            </div>
+          ) : roots.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border/70 p-5 text-sm text-muted-foreground">
+              No comments yet — be the first to comment.
             </div>
           ) : (
             roots.map((c) => (
