@@ -1,27 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
-import { commentOnPost } from "@/modules/blog/lib/blogsApi";
+import { getComments, addComment, deleteComment as apiDeleteComment, reactToComment as apiReactToComment, reactToCommentWithFeedback } from "@/modules/blog/lib/blogsApi";
+import type { CommentWithAuthor } from "@/modules/blog/lib/blogsApi";
 import { toast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { supabase } from '@/core/auth/supabase';
-import { getFunctionsBaseUrl } from '@/modules/exam/lib/functionsUrl';
 import { useAuth } from '@/modules/career/contexts/AuthContext';
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { ThumbsUp } from "lucide-react";
 
 interface CommentNode {
   id: string;
-  author_id: string;
+  author_id?: string;
+  user_id?: string;
   parent_id: string | null;
   content: string;
   created_at: string;
-  author?: { user_id: string; full_name: string; avatar_url: string | null } | null;
+  author?: { id?: string; user_id?: string; display_name?: string; full_name?: string; avatar_url: string | null } | null;
   replies?: CommentNode[];
   reactions?: { up: number; down: number };
   user_reaction?: string | null;
+}
+
+function normalizeComments(raw: CommentWithAuthor[]): CommentNode[] {
+  return raw.map(c => ({
+    id: c.id,
+    author_id: c.user_id,
+    parent_id: c.parent_id,
+    content: c.content,
+    created_at: c.created_at,
+    author: c.author ? {
+      user_id: c.author.id,
+      full_name: c.author.display_name,
+      avatar_url: c.author.avatar_url,
+    } : null,
+    replies: [],
+    reactions: c.reactions,
+    user_reaction: c.user_reaction,
+  }));
 }
 
 export default function CommentThread({
@@ -47,24 +65,16 @@ export default function CommentThread({
 
   useEffect(() => {
     setComments(initialComments);
-    // Always load comments on mount for immediate rendering
     loadComments();
   }, [initialComments]);
 
   const loadComments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/${postId}/comments`, {
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data.comments || []);
-        onCommentsChange?.(data.comments || []);
-      }
+      const data = await getComments(postId);
+      const normalized = normalizeComments(data);
+      setComments(normalized);
+      onCommentsChange?.(normalized);
     } catch (error) {
       console.error("Failed to load comments:", error);
     } finally {
@@ -85,12 +95,12 @@ export default function CommentThread({
       toast.error("Please verify your email to comment");
       return;
     }
-    
-    // Optimistic update - add comment instantly
-    const optimisticComment = {
+
+    // Optimistic update
+    const optimisticComment: CommentNode = {
       id: `temp-${Date.now()}`,
       author_id: user.id,
-      parent_id: parent,
+      parent_id: parent || null,
       content,
       created_at: new Date().toISOString(),
       author: {
@@ -102,40 +112,22 @@ export default function CommentThread({
       reactions: { up: 0, down: 0 },
       user_reaction: null
     };
-    
+
     const updatedComments = [...comments, optimisticComment];
     setComments(updatedComments);
     onCommentsChange?.(updatedComments);
     setText("");
     setReplyTo(null);
-    
+
     try {
       setBusy(true);
-      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/${postId}/comment`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({ content, parent_id: parent })
-      });
-      
-      if (response.ok) {
-        await loadComments(); // Reload to get real data
-        toast.success("Comment posted");
-      } else {
-        // Revert optimistic update on error
-        setComments(comments);
-        onCommentsChange?.(comments);
-        const error = await response.json();
-        toast.error(error.error || "Failed to post comment");
-      }
-    } catch (e) {
-      // Revert optimistic update on error
+      await addComment(postId, content, parent);
+      await loadComments();
+      toast.success("Comment posted");
+    } catch (e: any) {
       setComments(comments);
       onCommentsChange?.(comments);
-      console.error(e);
-      toast.error("Failed to post comment");
+      toast.error(e.message || "Failed to post comment");
     } finally {
       setBusy(false);
     }
@@ -144,28 +136,16 @@ export default function CommentThread({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [reactingIds, setReactingIds] = useState<Set<string>>(new Set());
 
-  const deleteComment = async (commentId: string) => {
+  const handleDeleteComment = async (commentId: string) => {
     setDeletingIds(prev => new Set([...prev, commentId]));
-    
+
     try {
-      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        }
-      });
-      
-      if (response.ok) {
-        setDeletedIds(prev => new Set([...prev, commentId]));
-        await loadComments(); // Reload comments
-        toast.success('Comment deleted');
-      } else {
-        const error = await response.json();
-        toast.error(error.error || 'Failed to delete comment');
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error('Failed to delete comment');
+      await apiDeleteComment(commentId);
+      setDeletedIds(prev => new Set([...prev, commentId]));
+      await loadComments();
+      toast.success('Comment deleted');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to delete comment');
     } finally {
       setDeletingIds(prev => {
         const newSet = new Set(prev);
@@ -175,7 +155,7 @@ export default function CommentThread({
     }
   };
 
-  const reactToComment = async (commentId: string, type: "up") => {
+  const handleReactToComment = async (commentId: string, type: "up") => {
     if (!user?.id) {
       toast.error("Please log in to react");
       return;
@@ -184,22 +164,9 @@ export default function CommentThread({
     setReactingIds(prev => new Set([...prev, commentId]));
 
     try {
-      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/comments/${commentId}/react`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({ type })
-      });
-      
-      if (response.ok) {
-        await loadComments(); // Reload to get updated reaction counts
-      } else {
-        toast.error("Failed to react");
-      }
-    } catch (e) {
-      console.error(e);
+      await apiReactToComment(commentId, type);
+      await loadComments();
+    } catch {
       toast.error("Failed to react");
     } finally {
       setReactingIds(prev => {
@@ -217,31 +184,18 @@ export default function CommentThread({
     }
 
     try {
-      const feedbackMessage = feedbackReason === "other" 
-        ? feedbackText.trim() 
+      const feedbackMessage = feedbackReason === "other"
+        ? feedbackText.trim()
         : `${feedbackReason}${feedbackText.trim() ? `: ${feedbackText.trim()}` : ""}`;
 
-      const response = await fetch(`${getFunctionsBaseUrl()}/functions/v1/blogs-api/api/blogs/comments/${feedbackModal.commentId}/react`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({ type: "down", feedback: feedbackMessage })
-      });
-      
-      if (response.ok) {
-        setFeedbackModal({ commentId: "", open: false });
-        setFeedbackReason("");
-        setFeedbackText("");
-        setFeedbackSubmitted(prev => new Set([...prev, feedbackModal.commentId]));
-        await loadComments();
-        toast.success("Feedback submitted");
-      } else {
-        toast.error("Failed to submit feedback");
-      }
-    } catch (e) {
-      console.error(e);
+      await reactToCommentWithFeedback(feedbackModal.commentId, "down", feedbackMessage);
+      setFeedbackModal({ commentId: "", open: false });
+      setFeedbackReason("");
+      setFeedbackText("");
+      setFeedbackSubmitted(prev => new Set([...prev, feedbackModal.commentId]));
+      await loadComments();
+      toast.success("Feedback submitted");
+    } catch {
       toast.error("Failed to submit feedback");
     }
   };
@@ -262,26 +216,26 @@ export default function CommentThread({
   const tree = useMemo(() => buildTree(comments), [comments]);
 
   const Item = ({ c }: { c: CommentNode }) => {
-    const isOwner = user?.id && c.author_id === user.id;
+    const isOwner = user?.id && (c.author_id === user.id || c.user_id === user.id);
     const reactions = c.reactions || { up: 0, down: 0 };
     const hasFeedback = feedbackSubmitted.has(c.id);
     const isDeleting = deletingIds.has(c.id);
     const isReacting = reactingIds.has(c.id);
-    
+
     return (
       <div className="flex items-start gap-3">
         <Avatar className="h-8 w-8">
           <AvatarImage src={c.author?.avatar_url || undefined} />
           <AvatarFallback className="bg-muted">
-            {c.author?.full_name?.charAt(0) || '?'}
+            {(c.author?.full_name || c.author?.display_name)?.charAt(0) || '?'}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-sm">{c.author?.full_name || 'Anonymous'}</span>
+            <span className="font-medium text-sm">{c.author?.full_name || c.author?.display_name || 'Anonymous'}</span>
             <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
           </div>
-          
+
           {isDeleting ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
               <div className="w-3 h-3 border border-muted-foreground border-t-transparent rounded-full animate-spin"></div>
@@ -290,34 +244,34 @@ export default function CommentThread({
           ) : (
             <p className="text-sm mb-2">{c.content}</p>
           )}
-          
+
           <div className="flex items-center gap-2 flex-wrap">
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={() => setReplyTo(c.id)}
               className="transition-all duration-200 hover:scale-105 hover:bg-accent/60"
             >
               Reply
             </Button>
             {isOwner && (
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={() => deleteComment(c.id)}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleDeleteComment(c.id)}
                 disabled={isDeleting}
                 className="transition-all duration-200 hover:scale-105 hover:bg-destructive/10 hover:text-destructive"
               >
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
             )}
-            
+
             {/* Reaction buttons - Only Like for comments */}
             <div className="flex items-center gap-1 ml-2">
               <Button
                 size="sm"
                 variant={c.user_reaction === "up" ? "default" : "ghost"}
-                onClick={() => reactToComment(c.id, "up")}
+                onClick={() => handleReactToComment(c.id, "up")}
                 disabled={isReacting}
                 className="h-7 px-2 transition-all duration-200 hover:scale-105 hover:bg-green-500/10 hover:text-green-600"
               >
@@ -330,20 +284,20 @@ export default function CommentThread({
               </Button>
             </div>
           </div>
-          
+
           {isReacting && (
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-              <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+              <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin inline-block" />
               Updating reaction...
             </p>
           )}
-          
+
           {hasFeedback && (
             <p className="text-xs text-muted-foreground mt-2">
-              ✓ Feedback sent
+              Feedback sent
             </p>
           )}
-          
+
           {c.replies && c.replies.length > 0 && (
             <div className="mt-3 space-y-4 border-l sm:pl-6 pl-3 sm:ml-6 ml-3">
               {c.replies.filter(r => !deletedIds.has(r.id)).map(r => <Item key={r.id} c={r} />)}
@@ -368,16 +322,16 @@ export default function CommentThread({
               </div>
             ) : (
               <>
-                <Textarea 
-                  className="flex-1 rounded-2xl" 
-                  value={text} 
-                  onChange={(e) => setText(e.target.value)} 
+                <Textarea
+                  className="flex-1 rounded-2xl"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
                   placeholder={user?.email_confirmed_at ? "Add a comment" : "Verify your email to comment"}
                   disabled={!user?.email_confirmed_at}
                 />
-                <Button 
-                  size="sm" 
-                  onClick={() => submit(null)} 
+                <Button
+                  size="sm"
+                  onClick={() => submit(null)}
                   disabled={busy || !user?.email_confirmed_at}
                   className="rounded-2xl"
                 >
@@ -391,10 +345,9 @@ export default function CommentThread({
             Sign in to join the discussion
           </div>
         )}
-        
+
         <div className="space-y-6">
           {loading ? (
-            // Skeleton loader for initial load
             <div className="space-y-4">
               {[1, 2, 3].map(i => (
                 <div key={i} className="flex items-start gap-3">
@@ -413,16 +366,16 @@ export default function CommentThread({
                 <Item c={c} />
                 {replyTo === c.id && user && (
                   <div className="sm:ml-11 ml-8">
-                    <Textarea 
-                      value={text} 
-                      onChange={(e) => setText(e.target.value)} 
+                    <Textarea
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
                       placeholder={user?.email_confirmed_at ? "Write a reply" : "Verify your email to reply"}
                       disabled={!user?.email_confirmed_at}
                     />
                     <div className="mt-2 flex gap-2">
-                      <Button 
-                        size="sm" 
-                        onClick={() => submit(c.id)} 
+                      <Button
+                        size="sm"
+                        onClick={() => submit(c.id)}
                         disabled={busy || !user?.email_confirmed_at}
                       >
                         Reply
@@ -465,7 +418,7 @@ export default function CommentThread({
                 <Label htmlFor="other">Other</Label>
               </div>
             </RadioGroup>
-            
+
             <div className="space-y-2">
               <Label htmlFor="feedback">Additional feedback (optional)</Label>
               <Textarea

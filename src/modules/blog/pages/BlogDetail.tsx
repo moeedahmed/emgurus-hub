@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { getBlog } from "@/modules/blog/lib/blogsApi";
+import { getBlog, toggleLike, trackShare } from "@/modules/blog/lib/blogsApi";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +23,8 @@ export default function BlogDetail() {
   const [engagementCounts, setEngagementCounts] = useState({
     views: 0, likes: 0, comments: 0, shares: 0
   });
+  const [userLiked, setUserLiked] = useState(false);
+  const [liking, setLiking] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -38,6 +40,7 @@ export default function BlogDetail() {
             shares: res.counts.shares || 0,
           });
         }
+        setUserLiked(!!res.user_liked);
         // SEO
         document.title = `${res.title} | EMGurus`;
         const meta = document.querySelector("meta[name='description']");
@@ -79,8 +82,24 @@ export default function BlogDetail() {
 
   const handleLike = async () => {
     if (!user?.id) { toast.error("Please log in to like this post"); return; }
-    setEngagementCounts(prev => ({ ...prev, likes: prev.likes + 1 }));
-    // TODO: wire to actual like endpoint when available
+    if (liking) return;
+    setLiking(true);
+    // Optimistic update
+    const wasLiked = userLiked;
+    setUserLiked(!wasLiked);
+    setEngagementCounts(prev => ({ ...prev, likes: prev.likes + (wasLiked ? -1 : 1) }));
+    try {
+      const result = await toggleLike(data.id);
+      setUserLiked(result.liked);
+      setEngagementCounts(prev => ({ ...prev, likes: result.count }));
+    } catch {
+      // Revert on error
+      setUserLiked(wasLiked);
+      setEngagementCounts(prev => ({ ...prev, likes: prev.likes + (wasLiked ? 1 : -1) }));
+      toast.error("Failed to update like");
+    } finally {
+      setLiking(false);
+    }
   };
 
   const hasEngagement = engagementCounts.views > 0 || engagementCounts.likes > 0 || engagementCounts.comments > 0;
@@ -220,9 +239,9 @@ export default function BlogDetail() {
               size="sm"
               variant="ghost"
               onClick={handleLike}
-              className="gap-1.5 hover:text-primary"
+              className={`gap-1.5 hover:text-primary ${userLiked ? "text-primary" : ""}`}
             >
-              <ThumbsUp className="h-4 w-4" />
+              <ThumbsUp className={`h-4 w-4 ${userLiked ? "fill-current" : ""}`} />
               {engagementCounts.likes > 0 ? engagementCounts.likes : "Like"}
             </Button>
             <Button
@@ -242,7 +261,10 @@ export default function BlogDetail() {
               text={data.excerpt || "Check out this blog post on EMGurus"}
               postId={data.id}
               shareCount={engagementCounts.shares}
-              onShare={() => setEngagementCounts(prev => ({ ...prev, shares: prev.shares + 1 }))}
+              onShare={async (platform: string) => {
+                setEngagementCounts(prev => ({ ...prev, shares: prev.shares + 1 }));
+                try { await trackShare(data.id, platform); } catch {}
+              }}
               variant="inline"
             />
             <ReportIssueModal postId={data.id} postTitle={data.title} />
@@ -289,8 +311,8 @@ export default function BlogDetail() {
       <div className="fixed bottom-0 left-0 right-0 lg:hidden border-t bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm" onClick={handleLike} className="gap-1">
-              <ThumbsUp className="h-4 w-4" />
+            <Button variant="ghost" size="sm" onClick={handleLike} className={`gap-1 ${userLiked ? "text-primary" : ""}`}>
+              <ThumbsUp className={`h-4 w-4 ${userLiked ? "fill-current" : ""}`} />
               {engagementCounts.likes > 0 && engagementCounts.likes}
             </Button>
             <Button

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from '@/modules/career/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { callFunction } from '@/modules/exam/lib/functionsUrl';
+import { submitFeedback } from '@/modules/blog/lib/blogsApi';
 import { Flag } from "lucide-react";
 
 interface ReportIssueModalProps {
@@ -33,9 +33,7 @@ export default function ReportIssueModal({ postId, postTitle }: ReportIssueModal
 
     setSubmitting(true);
     try {
-      await callFunction(`blogs-api/api/blogs/${postId}/feedback`, {
-        message: message.trim()
-      });
+      await submitFeedback(postId, message.trim());
 
       toast({ title: "Feedback submitted successfully", description: "Thank you for helping us improve!" });
       setMessage("");

@@ -51,6 +51,7 @@ export interface BlogDetailPayload {
   };
   reactions?: { [key in ReactionKey]?: number };
   user_reaction?: ReactionKey | null;
+  user_liked?: boolean;
   ai_summary?: string | null;
   comments?: any[];
 }
@@ -147,19 +148,17 @@ export async function listBlogs(params: {
       tagMap.get(t.post_id)!.push(t.tag);
     });
 
-    // Get reactions count for each post
-    const { data: reactionData } = postIds.length
+    // Get likes count from blog_likes
+    const { data: likesData } = postIds.length
       ? await supabase
-          .from("blog_reactions")
-          .select("post_id, reaction")
+          .from("blog_likes")
+          .select("post_id")
           .in("post_id", postIds)
       : { data: [] };
 
     const likesCount = new Map<string, number>();
-    (reactionData || []).forEach((r: any) => {
-      if (r.reaction !== "thumbs_down") {
-        likesCount.set(r.post_id, (likesCount.get(r.post_id) || 0) + 1);
-      }
+    (likesData || []).forEach((r: any) => {
+      likesCount.set(r.post_id, (likesCount.get(r.post_id) || 0) + 1);
     });
 
     // Get comments count
@@ -207,57 +206,59 @@ export async function listBlogs(params: {
 }
 
 export async function getBlog(slug: string): Promise<BlogDetailPayload> {
-  try {
-    const res = await fetch(`${BASE}/api/blogs/${slug}`, { headers: await authHeader() });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  } catch (err) {
-    // Fallback to direct Supabase query
-    const { data: post, error } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("slug", slug)
-      .eq("status", "published")
-      .maybeSingle();
+  // Primary path: direct Supabase query
+  const { data: post, error } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
 
-    if (error || !post) throw new Error("Post not found");
+  if (error || !post) throw new Error("Post not found");
 
-    // Fetch related data including AI summary and comment count
-    const [authorRes, categoryRes, tagsRes, aiSummaryRes, commentCountRes] = await Promise.all([
-      supabase.from("profiles").select("id, display_name, avatar_url").eq("id", post.author_id).maybeSingle(),
-      post.category_id ? supabase.from("blog_categories").select("id, title, slug").eq("id", post.category_id).maybeSingle() : Promise.resolve({ data: null }),
-      supabase.from("blog_post_tags").select("tag:blog_tags(slug, title)").eq("post_id", post.id),
-      supabase.from("blog_ai_summaries").select("summary_md").eq("post_id", post.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("blog_comments").select("id", { count: "exact", head: true }).eq("post_id", post.id)
-    ]);
+  // Get current user for like status
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
 
-    return {
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.description,
-      content: post.content || "",
-      cover_image_url: post.cover_image_url,
-      category: categoryRes.data,
-      tags: tagsRes.data?.map((t: any) => t.tag) || [],
-      author: authorRes.data ? {
-        id: post.author_id,
-        name: authorRes.data.display_name || "Unknown",
-        avatar: authorRes.data.avatar_url
-      } : { id: post.author_id, name: "Unknown", avatar: null },
-      reading_minutes: null,
-      published_at: post.published_at || post.created_at,
-      counts: { 
-        likes: 0, 
-        comments: commentCountRes.count || 0, 
-        views: post.view_count || 0 
-      },
-      reactions: {},
-      user_reaction: null,
-      ai_summary: aiSummaryRes.data?.summary_md || null,
-      comments: []
-    };
-  }
+  const [authorRes, categoryRes, tagsRes, aiSummaryRes, commentCountRes, likesCountRes, sharesCountRes, userLikeRes] = await Promise.all([
+    supabase.from("profiles").select("id, display_name, avatar_url").eq("id", post.author_id).maybeSingle(),
+    post.category_id ? supabase.from("blog_categories").select("id, title, slug").eq("id", post.category_id).maybeSingle() : Promise.resolve({ data: null }),
+    supabase.from("blog_post_tags").select("tag:blog_tags(slug, title)").eq("post_id", post.id),
+    supabase.from("blog_ai_summaries").select("summary_md").eq("post_id", post.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("blog_comments").select("id", { count: "exact", head: true }).eq("post_id", post.id),
+    supabase.from("blog_likes").select("post_id", { count: "exact", head: true }).eq("post_id", post.id),
+    supabase.from("blog_shares").select("id", { count: "exact", head: true }).eq("post_id", post.id),
+    userId ? supabase.from("blog_likes").select("post_id").eq("post_id", post.id).eq("user_id", userId).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.description,
+    content: post.content || "",
+    cover_image_url: post.cover_image_url,
+    category: categoryRes.data,
+    tags: tagsRes.data?.map((t: any) => t.tag) || [],
+    author: authorRes.data ? {
+      id: post.author_id,
+      name: authorRes.data.display_name || "Unknown",
+      avatar: authorRes.data.avatar_url
+    } : { id: post.author_id, name: "Unknown", avatar: null },
+    reading_minutes: null,
+    published_at: post.published_at || post.created_at,
+    counts: {
+      likes: likesCountRes.count || 0,
+      comments: commentCountRes.count || 0,
+      views: post.view_count || 0,
+      shares: sharesCountRes.count || 0,
+    },
+    reactions: {},
+    user_reaction: null,
+    user_liked: !!userLikeRes.data,
+    ai_summary: aiSummaryRes.data?.summary_md || null,
+    comments: []
+  };
 }
 
 export async function createDraft(body: {
@@ -332,50 +333,197 @@ export async function publishPost(id: string) {
   return res.json();
 }
 
-export async function reactToPost(id: string, reaction: ReactionKey) {
-  const res = await fetch(`${BASE}/api/blogs/${id}/react`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...(await authHeader()) },
-    body: JSON.stringify({ reaction }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+// ─── Engagement: direct Supabase queries ───
+
+export async function toggleLike(postId: string): Promise<{ liked: boolean; count: number }> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  // Check if already liked
+  const { data: existing } = await supabase
+    .from("blog_likes")
+    .select("post_id")
+    .eq("post_id", postId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase.from("blog_likes").delete().eq("post_id", postId).eq("user_id", userId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase.from("blog_likes").insert({ post_id: postId, user_id: userId });
+    if (error) throw new Error(error.message);
+  }
+
+  // Return new count
+  const { count } = await supabase.from("blog_likes").select("post_id", { count: "exact", head: true }).eq("post_id", postId);
+  return { liked: !existing, count: count || 0 };
 }
 
-export async function commentOnPost(id: string, content: string, parent_id?: string) {
-  const res = await fetch(`${BASE}/api/blogs/${id}/comment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...(await authHeader()) },
-    body: JSON.stringify({ content, parent_id }),
+export async function addComment(postId: string, content: string, parentId?: string | null) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  const row: any = { post_id: postId, user_id: userId, content };
+  if (parentId) row.parent_id = parentId;
+
+  const { data, error } = await supabase.from("blog_comments").insert(row).select("*").single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function deleteComment(commentId: string) {
+  const { error } = await supabase.from("blog_comments").delete().eq("id", commentId);
+  if (error) throw new Error(error.message);
+}
+
+export async function reactToComment(commentId: string, reaction: string) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  // Check if already reacted
+  const { data: existing } = await supabase
+    .from("blog_comment_reactions")
+    .select("id")
+    .eq("comment_id", commentId)
+    .eq("user_id", userId)
+    .eq("reaction", reaction)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("blog_comment_reactions").delete().eq("id", existing.id);
+    return { toggled: false };
+  } else {
+    await supabase.from("blog_comment_reactions").insert({ comment_id: commentId, user_id: userId, reaction });
+    return { toggled: true };
+  }
+}
+
+export async function reactToCommentWithFeedback(commentId: string, reaction: string, feedback?: string) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  const { data: existing } = await supabase
+    .from("blog_comment_reactions")
+    .select("id")
+    .eq("comment_id", commentId)
+    .eq("user_id", userId)
+    .eq("reaction", reaction)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("blog_comment_reactions").delete().eq("id", existing.id);
+    return { toggled: false };
+  } else {
+    const row: any = { comment_id: commentId, user_id: userId, reaction };
+    if (feedback) row.feedback = feedback;
+    await supabase.from("blog_comment_reactions").insert(row);
+    return { toggled: true };
+  }
+}
+
+export async function trackShare(postId: string, platform: string) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
+  const { error } = await supabase.from("blog_shares").insert({
+    post_id: postId,
+    user_id: userId || null,
+    platform,
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  if (error) throw new Error(error.message);
+}
+
+export async function submitFeedback(postId: string, message: string) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("Not authenticated");
+
+  const { error } = await supabase.from("blog_post_feedback").insert({
+    post_id: postId,
+    user_id: userId,
+    message,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export interface CommentWithAuthor {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  parent_id: string | null;
+  created_at: string;
+  author: { id: string; display_name: string; avatar_url: string | null } | null;
+  reactions: { up: number; down: number };
+  user_reaction: string | null;
+}
+
+export async function getComments(postId: string): Promise<CommentWithAuthor[]> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
+  const { data: comments, error } = await supabase
+    .from("blog_comments")
+    .select("id, post_id, user_id, content, parent_id, created_at")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  if (!comments?.length) return [];
+
+  // Fetch author profiles
+  const authorIds = [...new Set(comments.map(c => c.user_id).filter(Boolean))];
+  const { data: profiles } = authorIds.length
+    ? await supabase.from("profiles").select("id, display_name, avatar_url").in("id", authorIds)
+    : { data: [] };
+  const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+
+  // Fetch reaction counts per comment
+  const commentIds = comments.map(c => c.id);
+  const { data: reactions } = await supabase
+    .from("blog_comment_reactions")
+    .select("comment_id, reaction")
+    .in("comment_id", commentIds);
+
+  const reactionCounts = new Map<string, { up: number; down: number }>();
+  (reactions || []).forEach((r: any) => {
+    if (!reactionCounts.has(r.comment_id)) reactionCounts.set(r.comment_id, { up: 0, down: 0 });
+    const counts = reactionCounts.get(r.comment_id)!;
+    if (r.reaction === "up" || r.reaction === "thumbs_up") counts.up++;
+    else if (r.reaction === "down" || r.reaction === "thumbs_down") counts.down++;
+  });
+
+  // Fetch user's own reactions
+  let userReactions = new Map<string, string>();
+  if (userId) {
+    const { data: userReactionData } = await supabase
+      .from("blog_comment_reactions")
+      .select("comment_id, reaction")
+      .in("comment_id", commentIds)
+      .eq("user_id", userId);
+    (userReactionData || []).forEach((r: any) => userReactions.set(r.comment_id, r.reaction));
+  }
+
+  return comments.map(c => {
+    const profile = profileMap.get(c.user_id) as any;
+    return {
+      ...c,
+      author: profile ? { id: profile.id, display_name: profile.display_name, avatar_url: profile.avatar_url } : null,
+      reactions: reactionCounts.get(c.id) || { up: 0, down: 0 },
+      user_reaction: userReactions.get(c.id) || null,
+    };
+  });
 }
 
 export async function refreshAISummary(id: string) {
   const res = await fetch(`${BASE}/api/blogs/${id}/ai-summary`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeader()) },
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-export async function sharePost(id: string, platform: string) {
-  const res = await fetch(`${BASE}/api/blogs/${id}/share`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...(await authHeader()) },
-    body: JSON.stringify({ platform }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-export async function submitFeedback(postId: string, message: string) {
-  const res = await fetch(`${BASE}/api/blogs/${postId}/feedback`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...(await authHeader()) },
-    body: JSON.stringify({ message }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
