@@ -121,10 +121,10 @@ export function NextStepWidget({ className, goals: propGoals, isLoading: propLoa
                 </div>
                 <Button
                     onClick={() => navigate('/goal')}
-                    className="w-full h-12 text-sm font-semibold shadow-sm hover:shadow-md transition-all mt-auto"
+                    className="w-full h-11 text-xs font-semibold shadow-sm hover:shadow-md transition-all mt-auto"
                 >
-                    Create Your First Goal
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    Create First Goal
+                    <ArrowRight className="ml-1.5 w-3.5 h-3.5 flex-shrink-0" />
                 </Button>
             </motion.div>
         );
