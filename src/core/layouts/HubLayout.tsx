@@ -8,7 +8,7 @@ export function HubLayout() {
     <SidebarProvider>
       <AppSidebar />
 
-      <SidebarInset>
+      <SidebarInset className="overflow-x-hidden">
         {/* Top bar with sidebar toggle */}
         <header className="sticky top-0 z-40 flex h-12 items-center gap-2 border-b border-border bg-background/80 backdrop-blur-md px-4">
           <SidebarTrigger className="-ml-1" />
@@ -16,8 +16,10 @@ export function HubLayout() {
         </header>
 
         {/* Page content — extra bottom padding on mobile for bottom nav */}
-        <main className="p-4 pb-20 md:p-6 md:pb-6">
-          <Outlet />
+        <main className="p-4 pb-20 md:p-6 md:pb-6 overflow-x-hidden">
+          <div className="w-full max-w-full">
+            <Outlet />
+          </div>
         </main>
       </SidebarInset>
 
