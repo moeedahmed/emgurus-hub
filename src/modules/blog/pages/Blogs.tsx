@@ -327,9 +327,7 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-center max-w-6xl mx-auto">
-                  {items
-                    .filter(p => !/^imported$/i.test(p.category?.title || ''))
-                    .map((p) => (
+                  {items.map((p) => (
                     <BlogCard
                       key={p.id}
                       post={p}
