@@ -24,7 +24,7 @@ const PageHero = ({ title, subtitle, align = "left", eyebrow, ctas = [], classNa
   return (
     <header
       className={cn(
-        "relative overflow-hidden bg-gradient-to-b from-secondary to-background/30 border-b",
+        "relative overflow-hidden border-b border-border/40",
         "py-10 sm:py-14 lg:py-16 animate-fade-in",
         className
       )}
