@@ -119,12 +119,13 @@ export default function ThreadList() {
 
   return (
     <div>
-      <PageHero
-        title="Forum"
-        subtitle="Discuss cases, share tips, and connect with peers."
-        align="center"
-        ctas={[{ label: 'New Thread', href: '/forum/new' }]}
-      />
+      <div className="px-4 sm:px-6 pt-8 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="heading-xl">Forum</h1>
+          <Link to="/forum/new" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">New Thread</Link>
+        </div>
+        <p className="text-muted-foreground">Discuss cases, share tips, and connect with peers.</p>
+      </div>
     <div className="px-4 py-6 max-w-4xl mx-auto space-y-4">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">

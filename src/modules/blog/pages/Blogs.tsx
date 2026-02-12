@@ -4,7 +4,7 @@ import { getJson } from '@/modules/exam/lib/functionsClient';
 import { callFunction } from '@/modules/exam/lib/functionsUrl';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Card } from "@/components/ui/card";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from '@/hooks/use-toast';
 import BlogCard from "@/modules/blog/components/blogs/BlogCard";
 import BlogsFilterPanel from "@/modules/blog/components/blogs/BlogsFilterPanel";
@@ -222,12 +222,15 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
   return (
     <div>
       {!embedded && (
-        <PageHero
-          title="Blogs"
-          subtitle="Read and share insights from the EM community."
-          align="center"
-          ctas={[{ label: "Write Blog", href: "/blog/editor/new", variant: "default" }]}
-        />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="heading-xl">Blog</h1>
+            <Button asChild>
+              <Link to="/blog/editor/new">Write Blog</Link>
+            </Button>
+          </div>
+          <p className="text-muted-foreground">Read and share insights from the EM community.</p>
+        </div>
       )}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="space-y-8">
