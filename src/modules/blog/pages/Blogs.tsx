@@ -10,10 +10,13 @@ import BlogCard from "@/modules/blog/components/blogs/BlogCard";
 import BlogsFilterPanel from "@/modules/blog/components/blogs/BlogsFilterPanel";
 import TopAuthorsPanel from "@/modules/blog/components/blogs/TopAuthorsPanel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import PageHero from '@/core/components/PageHero';
 import { CATEGORIES, sanitizeCategory } from "@/modules/blog/lib/taxonomy";
 import { Chip } from "@/components/ui/chip";
+import { Search } from "lucide-react";
 import FeaturedBlogCarousel from "@/modules/blog/components/blogs/FeaturedBlogCarousel";
 
 export default function Blogs({ embedded = false }: { embedded?: boolean } = {}) {
@@ -227,27 +230,40 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
         />
       )}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left filters panel - sticky and independently scrollable */}
-          <aside className="lg:col-span-4 hidden lg:block">
-            <div className="lg:sticky lg:top-20">
-              <div className="max-h-[calc(100vh-6rem)] overflow-auto pr-2 space-y-6">
-                <BlogsFilterPanel
-                  q={q}
-                  category={category}
-                  author={author}
-                  sort={sort}
-                  categories={categories}
-                  authors={authors}
-                  onChange={setParam}
-                  onReset={() => setSearchParams(new URLSearchParams())}
-                />
-                <TopAuthorsPanel authors={topAuthors} />
-              </div>
+        <div className="space-y-8">
+          {/* Top search & filter bar */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input className="pl-9" value={q} onChange={(e) => setParam("q", e.target.value)} placeholder="Search blogs..." />
             </div>
-          </aside>
+            <Select value={category || "__all__"} onValueChange={(v) => setParam("category", v === "__all__" ? "" : v)}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                <SelectItem value="__all__">All Categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.title} value={c.title}>{c.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={(v) => setParam("sort", v)}>
+              <SelectTrigger className="w-full sm:w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="liked">Most Liked</SelectItem>
+                <SelectItem value="discussed">Most Discussed</SelectItem>
+                <SelectItem value="editors">Editor's Picks</SelectItem>
+                <SelectItem value="featured">Featured</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Main list - vertical cards, left aligned */}
+          {/* Main content */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <section className="lg:col-span-8">
             {/* Featured posts carousel */}
             {featuredItems.length > 0 && (
@@ -262,25 +278,6 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
             
             
             <div className="mb-4 space-y-3">
-              <div className="flex items-center gap-3 lg:hidden">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline">Filters</Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-full max-w-sm sm:max-w-md md:max-w-lg">
-                    <BlogsFilterPanel
-                      q={q}
-                      category={category}
-                      author={author}
-                      sort={sort}
-                      categories={categories}
-                      authors={authors}
-                      onChange={setParam}
-                      onReset={() => setSearchParams(new URLSearchParams())}
-                    />
-                  </SheetContent>
-                </Sheet>
-              </div>
               {/* Active filters row */}
               {(category || tag || author || sort !== 'newest') && (
                 <div className="flex flex-wrap items-center gap-2">
@@ -378,6 +375,14 @@ export default function Blogs({ embedded = false }: { embedded?: boolean } = {})
               
             </div>
           </section>
+          
+          {/* Right sidebar - Top Authors */}
+          <aside className="lg:col-span-4 hidden lg:block">
+            <div className="lg:sticky lg:top-20">
+              <TopAuthorsPanel authors={topAuthors} />
+            </div>
+          </aside>
+          </div>
         </div>
       </section>
     </div>

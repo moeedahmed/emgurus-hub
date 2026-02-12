@@ -108,6 +108,7 @@ export default function BlogBaseCard({
           className="w-full h-[260px] sm:h-[360px] lg:h-[420px] object-cover"
           loading="lazy"
           decoding="async"
+          onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 lg:p-8 text-foreground">
@@ -211,6 +212,7 @@ export default function BlogBaseCard({
           className="w-full h-48 object-cover"
           loading="lazy"
           decoding="async"
+          onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
         />
         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
           {badges.map((badge, index) => (
