@@ -27,3 +27,6 @@ Thumbs.db
 
 # Supabase
 supabase/.temp/
+
+# One-off import artefacts (do not commit)
+_import/

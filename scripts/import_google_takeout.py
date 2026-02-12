@@ -6,7 +6,7 @@ Usage:
 
 Required environment variables:
   SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY
+  SUPABASE_SECRET_KEY (preferred) or SUPABASE_SERVICE_ROLE_KEY (legacy)
   IMPORT_AUTHOR_ID (preferred) OR IMPORT_AUTHOR_EMAIL
 """
 
@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup
 
 DEFAULT_ZIP = "_import/google-takeout/takeout.zip"
 PUBLISHED_PREFIX = "Takeout/Drive/Website/EM Gurus/PUBLISHED/"
-ASSET_BUCKET = "blog-assets"
+ASSET_BUCKET = os.environ.get("BLOG_ASSET_BUCKET", "blog-covers")
 
 
 @dataclass
@@ -109,6 +109,7 @@ class SupabaseClient:
         self.rest(
             "POST",
             "blog_categories",
+            params={"on_conflict": "slug"},
             json_body={"title": "Imported", "slug": "imported"},
             headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
         )
@@ -147,21 +148,34 @@ class SupabaseClient:
 def extract_main_content(html_text: str) -> tuple[str, str, str]:
     soup = BeautifulSoup(html_text, "html.parser")
 
-    for bad in soup(["script", "style", "noscript", "meta", "link"]):
-        bad.decompose()
-
     title_tag = soup.find("h1")
     page_title = title_tag.get_text(" ", strip=True) if title_tag else ""
 
-    main = soup.select_one('[role="main"]') or soup.body or soup
+    # Google Sites exports keep page content in .tyJCtd blocks.
+    blocks = []
+    seen = set()
+    for node in soup.select(".tyJCtd"):
+        text = re.sub(r"\s+", " ", node.get_text(" ", strip=True)).strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        blocks.append(str(node))
 
-    for noise in main.select('header, footer, nav, [role="navigation"], [aria-label="Breadcrumbs"]'):
-        noise.decompose()
+    if blocks:
+        content_html = "\n".join(blocks)
+        text = " ".join(re.sub(r"\s+", " ", BeautifulSoup(b, "html.parser").get_text(" ", strip=True)) for b in blocks)
+    else:
+        # fallback: entire body (minus scripts/styles)
+        fallback = BeautifulSoup(html_text, "html.parser")
+        for bad in fallback(["script", "style", "noscript", "meta", "link"]):
+            bad.decompose()
+        main = fallback.body or fallback
+        for noise in main.select('header, footer, nav, [role="navigation"], [aria-label="Breadcrumbs"]'):
+            noise.decompose()
+        content_html = str(main)
+        text = main.get_text(" ", strip=True)
 
-    content_html = str(main)
-    text = main.get_text(" ", strip=True)
     excerpt = re.sub(r"\s+", " ", text)[:280].strip()
-
     return page_title, content_html, excerpt
 
 
@@ -225,8 +239,9 @@ def rewrite_html_and_upload_assets(
         href = (a.get("href") or "").strip()
         if not href or href.startswith(("http://", "https://", "mailto:", "tel:", "#")):
             continue
-        if href.lower().endswith(".html"):
-            internal_name = PurePosixPath(href).name
+        href_clean = href.split("#", 1)[0].split("?", 1)[0]
+        if href_clean.lower().endswith(".html"):
+            internal_name = PurePosixPath(href_clean).name
             internal_slug = slugify(internal_name)
             a["href"] = f"/blogs/{internal_slug}"
 
@@ -240,9 +255,9 @@ def import_takeout(zip_path: str, limit: Optional[int], dry_run: bool):
 
     if not dry_run:
         supabase_url = os.environ.get("SUPABASE_URL")
-        service_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+        service_key = os.environ.get("SUPABASE_SECRET_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
         if not supabase_url or not service_key:
-            raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+            raise RuntimeError("SUPABASE_URL and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) are required")
 
         import_author_id = os.environ.get("IMPORT_AUTHOR_ID")
         import_author_email = os.environ.get("IMPORT_AUTHOR_EMAIL")
@@ -303,8 +318,6 @@ def import_takeout(zip_path: str, limit: Optional[int], dry_run: bool):
                 "status": "published",
                 "published_at": now,
                 "reading_minutes": estimate_reading_minutes(excerpt or title),
-                "source_platform": "google-sites",
-                "source_path": html_path,
                 "updated_at": now,
             }
 

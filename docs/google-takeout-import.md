@@ -8,10 +8,9 @@
 - Rewrites internal `.html` links to new `/blogs/{slug}` routes
 
 ## Preconditions
-1. Run DB migrations (includes `010_blog_takeout_import_support.sql`)
-2. Set environment variables:
+1. Set environment variables:
    - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_SECRET_KEY` (preferred; modern) or `SUPABASE_SERVICE_ROLE_KEY` (legacy)
    - `IMPORT_AUTHOR_ID` (preferred) **or** `IMPORT_AUTHOR_EMAIL`
 
 ## Commands
@@ -35,7 +34,7 @@ npm run import:takeout -- --zip /absolute/path/to/takeout.zip
 ```
 
 ## Notes
-- Source platform is detected as Google Sites (`source_platform='google-sites'`)
-- Source file path is stored in `blog_posts.source_path` for traceability
+- Export source is Google Sites (inferred from Takeout structure/HTML)
 - Category for imported content is auto-created as `Imported`
 - Script is idempotent via upsert on `blog_posts.slug`
+- Assets upload to `blog-covers` by default (override with `BLOG_ASSET_BUCKET`)
