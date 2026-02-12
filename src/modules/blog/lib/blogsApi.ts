@@ -125,11 +125,11 @@ export async function listBlogs(params: {
     const categoryIds = [...new Set(rawPosts?.map(p => p.category_id).filter(Boolean))];
 
     const [authorsRes, categoriesRes] = await Promise.all([
-      authorIds.length ? supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", authorIds) : Promise.resolve({ data: [] }),
+      authorIds.length ? supabase.from("profiles").select("id, display_name, avatar_url").in("id", authorIds) : Promise.resolve({ data: [] }),
       categoryIds.length ? supabase.from("blog_categories").select("id, title, slug").in("id", categoryIds) : Promise.resolve({ data: [] })
     ]);
 
-    const authorMap = new Map((authorsRes.data || []).map((a: any) => [a.user_id, a]));
+    const authorMap = new Map((authorsRes.data || []).map((a: any) => [a.id, a]));
     const categoryMap = new Map((categoriesRes.data || []).map((c: any) => [c.id, c]));
 
     // Get tags for posts
@@ -185,7 +185,7 @@ export async function listBlogs(params: {
       tags: tagMap.get(p.id) ?? [],
       author: (() => {
         const a = authorMap.get(p.author_id) as any;
-        return a ? { id: p.author_id, name: a.full_name || "Unknown", avatar: a.avatar_url ?? null } : { id: p.author_id, name: "Unknown", avatar: null };
+        return a ? { id: p.author_id, name: a.display_name || "Unknown", avatar: a.avatar_url ?? null } : { id: p.author_id, name: "Unknown", avatar: null };
       })(),
       reading_minutes: null,
       published_at: p.created_at ?? null,
@@ -224,7 +224,7 @@ export async function getBlog(slug: string): Promise<BlogDetailPayload> {
 
     // Fetch related data including AI summary and comment count
     const [authorRes, categoryRes, tagsRes, aiSummaryRes, commentCountRes] = await Promise.all([
-      supabase.from("profiles").select("user_id, full_name, avatar_url").eq("user_id", post.author_id).maybeSingle(),
+      supabase.from("profiles").select("id, display_name, avatar_url").eq("id", post.author_id).maybeSingle(),
       post.category_id ? supabase.from("blog_categories").select("id, title, slug").eq("id", post.category_id).maybeSingle() : Promise.resolve({ data: null }),
       supabase.from("blog_post_tags").select("tag:blog_tags(slug, title)").eq("post_id", post.id),
       supabase.from("blog_ai_summaries").select("summary_md").eq("post_id", post.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -242,7 +242,7 @@ export async function getBlog(slug: string): Promise<BlogDetailPayload> {
       tags: tagsRes.data?.map((t: any) => t.tag) || [],
       author: authorRes.data ? {
         id: post.author_id,
-        name: authorRes.data.full_name || "Unknown",
+        name: authorRes.data.display_name || "Unknown",
         avatar: authorRes.data.avatar_url
       } : { id: post.author_id, name: "Unknown", avatar: null },
       reading_minutes: null,
