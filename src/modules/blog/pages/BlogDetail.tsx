@@ -11,6 +11,7 @@ import { ThumbsUp, MessageCircle, Share2, ArrowLeft, Clock, Eye } from "lucide-r
 import ShareButtons from "@/modules/blog/components/blogs/ShareButtons";
 import CommentThread from "@/modules/blog/components/blogs/CommentThread";
 import ReportIssueModal from "@/modules/blog/components/blogs/ReportIssueModal";
+import BlogBreadcrumbs from "@/modules/blog/components/blogs/BlogBreadcrumbs";
 import DOMPurify from "dompurify";
 
 export default function BlogDetail() {
@@ -128,15 +129,23 @@ export default function BlogDetail() {
 
   return (
     <main className="min-h-screen pb-20 lg:pb-8">
-      {/* Back link */}
+      {/* Breadcrumbs / Back link */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl pt-6">
-        <button
-          onClick={() => navigate('/blog')}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Blog
-        </button>
+        {data.breadcrumb_path?.length ? (
+          <BlogBreadcrumbs
+            breadcrumbPath={data.breadcrumb_path}
+            currentTitle={data.title}
+            parentSlug={data.parent_slug}
+          />
+        ) : (
+          <button
+            onClick={() => navigate('/blog')}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Blog
+          </button>
+        )}
       </div>
 
       {/* Cover image */}

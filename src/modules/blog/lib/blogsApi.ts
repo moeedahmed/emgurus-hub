@@ -54,6 +54,8 @@ export interface BlogDetailPayload {
   user_liked?: boolean;
   ai_summary?: string | null;
   comments?: any[];
+  breadcrumb_path?: string[];
+  parent_slug?: string | null;
 }
 
 // Primary API functions pointing to the blogs-api Edge Function
@@ -257,7 +259,9 @@ export async function getBlog(slug: string): Promise<BlogDetailPayload> {
     user_reaction: null,
     user_liked: !!userLikeRes.data,
     ai_summary: aiSummaryRes.data?.summary_md || null,
-    comments: []
+    comments: [],
+    breadcrumb_path: post.breadcrumb_path || [],
+    parent_slug: post.parent_slug || null,
   };
 }
 
