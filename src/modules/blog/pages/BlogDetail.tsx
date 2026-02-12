@@ -227,7 +227,7 @@ export default function BlogDetail() {
   };
 
   if (loading) return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
+    <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
       <Skeleton className="h-8 w-48 mb-4" />
       <Skeleton className="h-64 w-full rounded-xl mb-6" />
       <Skeleton className="h-6 w-full mb-2" />
@@ -237,7 +237,7 @@ export default function BlogDetail() {
   );
 
   if (!data) return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
+    <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
       <Card className="p-8 text-center">
         <p className="text-lg font-medium mb-2">Article not found</p>
         <Button variant="outline" onClick={() => navigate('/blog')}>Back to Blog</Button>
@@ -246,12 +246,12 @@ export default function BlogDetail() {
   );
 
   return (
-    <main className="min-h-screen pb-20 lg:pb-8">
+    <main className="min-h-screen pb-20 lg:pb-8 overflow-x-hidden">
       <div className="fixed top-0 left-0 right-0 z-50 h-0.5 bg-transparent">
         <div className="h-full bg-primary transition-[width] duration-150" style={{ width: `${readingProgress}%` }} />
       </div>
       {/* Breadcrumbs / Back link */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl pt-6">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl pt-6">
         {data.breadcrumb_path?.length ? (
           <BlogBreadcrumbs
             breadcrumbPath={data.breadcrumb_path}
@@ -271,7 +271,7 @@ export default function BlogDetail() {
 
       {/* Cover image */}
       {data.cover_image_url && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mb-8">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mb-8">
           <img
             src={data.cover_image_url}
             alt={data.title}
@@ -283,7 +283,7 @@ export default function BlogDetail() {
       )}
 
       {/* Article header */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mb-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mb-8">
         {/* Category badge */}
         {displayCategory && (
           <button
@@ -335,7 +335,7 @@ export default function BlogDetail() {
       </div>
 
       {/* Article content — collapsible for better scanability */}
-      <article className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-5xl">
+      <article className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-5xl">
         <div className="rounded-2xl border border-border/60 bg-card/20 p-3 sm:p-5 lg:p-7 overflow-hidden">
           <style>{`
             .blog-content { font-family: inherit; line-height: 1.8; color: hsl(var(--foreground)); font-size: 0.95rem; overflow-wrap: break-word; word-break: break-word; }
@@ -500,7 +500,7 @@ export default function BlogDetail() {
       </article>
 
       {/* Action bar */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10">
         <div className="flex items-center justify-between py-4 border-t border-b">
           <div className="flex items-center gap-3">
             <Button
@@ -541,7 +541,7 @@ export default function BlogDetail() {
       </div>
 
       {/* Author card — clean, no fake bio */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-8">
         <Link
           to={`/profile/${data.author?.id}`}
           className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
@@ -563,7 +563,7 @@ export default function BlogDetail() {
       </div>
 
       {/* Comments */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10" id="comments">
+      <section className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10" id="comments">
         <h2 className="text-xl font-semibold mb-4">Comments</h2>
         <CommentThread
           postId={data.id}
@@ -577,7 +577,7 @@ export default function BlogDetail() {
 
       {/* Mobile sticky bar */}
       <div className="fixed bottom-0 left-0 right-0 lg:hidden border-t bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
-        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+        <div className="w-full mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex gap-1">
             <Button variant="ghost" size="sm" onClick={handleLike} className={`gap-1 ${userLiked ? "text-primary" : ""}`}>
               <ThumbsUp className={`h-4 w-4 ${userLiked ? "fill-current" : ""}`} />
