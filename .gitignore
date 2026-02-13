@@ -34,3 +34,4 @@ _import/
 # Playwright artefacts (do not commit)
 playwright-report/
 test-results/
+tests/e2e/.auth/
