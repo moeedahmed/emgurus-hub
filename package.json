@@ -8,7 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "import:takeout": "python3 scripts/import_google_takeout.py"
+    "import:takeout": "python3 scripts/import_google_takeout.py",
+    "test:e2e": "playwright test",
+    "test:e2e:update": "playwright test --update-snapshots",
+    "test:predeploy": "npm run build && playwright test"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -51,6 +54,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
