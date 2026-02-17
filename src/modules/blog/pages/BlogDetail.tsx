@@ -227,7 +227,7 @@ export default function BlogDetail() {
   };
 
   if (loading) return (
-    <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
+    <main className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 py-8 max-w-3xl">
       <Skeleton className="h-8 w-48 mb-4" />
       <Skeleton className="h-64 w-full rounded-xl mb-6" />
       <Skeleton className="h-6 w-full mb-2" />
@@ -237,7 +237,7 @@ export default function BlogDetail() {
   );
 
   if (!data) return (
-    <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-3xl">
+    <main className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 py-8 max-w-3xl">
       <Card className="p-8 text-center">
         <p className="text-lg font-medium mb-2">Article not found</p>
         <Button variant="outline" onClick={() => navigate('/blog')}>Back to Blog</Button>
@@ -251,7 +251,7 @@ export default function BlogDetail() {
         <div className="h-full bg-primary transition-[width] duration-150" style={{ width: `${readingProgress}%` }} />
       </div>
       {/* Breadcrumbs / Back link */}
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl pt-6">
+      <div className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl pt-6">
         {data.breadcrumb_path?.length ? (
           <BlogBreadcrumbs
             breadcrumbPath={data.breadcrumb_path}
@@ -271,7 +271,7 @@ export default function BlogDetail() {
 
       {/* Cover image */}
       {data.cover_image_url && (
-        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mb-8">
+        <div className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl mb-8">
           <img
             src={data.cover_image_url}
             alt={data.title}
@@ -283,7 +283,7 @@ export default function BlogDetail() {
       )}
 
       {/* Article header */}
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mb-8">
+      <div className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl mb-8">
         {/* Category badge */}
         {displayCategory && (
           <button
@@ -335,17 +335,17 @@ export default function BlogDetail() {
       </div>
 
       {/* Article content — collapsible for better scanability */}
-      <article className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl lg:max-w-5xl">
+      <article className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl lg:max-w-5xl">
         <div className="rounded-2xl border border-border/60 bg-card/20 p-3 sm:p-5 lg:p-7 overflow-hidden">
           <style>{`
-            .blog-content { font-family: inherit; line-height: 1.8; color: hsl(var(--foreground)); font-size: 0.95rem; overflow-wrap: break-word; word-break: break-word; }
-            @media (min-width: 640px) { .blog-content { font-size: 1.025rem; line-height: 1.9; } }
-            .blog-content h1 { font-size: 1.9rem; font-weight: 700; margin: 2.2rem 0 1rem; letter-spacing: -0.01em; font-family: inherit !important; }
-            .blog-content h2 { font-size: 1.55rem; font-weight: 650; margin: 1.9rem 0 0.85rem; letter-spacing: -0.01em; color: hsl(var(--foreground)); font-family: inherit !important; }
-            .blog-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1.65rem 0 0.6rem; color: hsl(var(--primary)); text-wrap: balance; font-family: inherit !important; }
-            .blog-content p { margin-bottom: 1.1rem; font-family: inherit !important; }
-            .blog-content ul, .blog-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-            .blog-content li { margin-bottom: 0.5rem; }
+            .blog-content { font-family: inherit; line-height: 1.65; color: hsl(var(--foreground)); font-size: 0.92rem; overflow-wrap: break-word; word-break: break-word; }
+            @media (min-width: 640px) { .blog-content { font-size: 1.025rem; line-height: 1.8; } }
+            .blog-content h1 { font-size: 1.7rem; font-weight: 700; margin: 1.5rem 0 0.75rem; letter-spacing: -0.01em; font-family: inherit !important; }
+            .blog-content h2 { font-size: 1.4rem; font-weight: 650; margin: 1.3rem 0 0.6rem; letter-spacing: -0.01em; color: hsl(var(--foreground)); font-family: inherit !important; }
+            .blog-content h3 { font-size: 1.15rem; font-weight: 600; margin: 1.1rem 0 0.4rem; color: hsl(var(--primary)); text-wrap: balance; font-family: inherit !important; }
+            .blog-content p { margin-bottom: 0.75rem; font-family: inherit !important; }
+            .blog-content ul, .blog-content ol { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+            .blog-content li { margin-bottom: 0.3rem; }
             .blog-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5rem 0; }
             .blog-content a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
             .blog-content a:hover { opacity: 0.8; }
@@ -503,7 +503,7 @@ export default function BlogDetail() {
       </article>
 
       {/* Action bar */}
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10">
+      <div className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl mt-10">
         <div className="flex items-center justify-between py-4 border-t border-b gap-2 overflow-hidden">
           <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             <Button
@@ -546,7 +546,7 @@ export default function BlogDetail() {
       </div>
 
       {/* Author card — clean, no fake bio */}
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-8">
+      <div className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl mt-8">
         <Link
           to={`/profile/${data.author?.id}`}
           className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
@@ -568,7 +568,7 @@ export default function BlogDetail() {
       </div>
 
       {/* Comments */}
-      <section className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10" id="comments">
+      <section className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl mt-10" id="comments">
         <h2 className="text-xl font-semibold mb-4">Comments</h2>
         <CommentThread
           postId={data.id}
