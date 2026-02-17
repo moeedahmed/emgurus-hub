@@ -76,11 +76,11 @@ export default function BlogBaseCard({
   if (topBadge) badges.push({ label: topBadge, variant: "secondary" as const });
 
   // Only show engagement stats that have non-zero values
-  const hasEngagement = counts && (
+  const hasEngagement = !!(counts && (
     (counts.views && counts.views > 0) ||
     (counts.likes && counts.likes > 0) ||
     (counts.comments && counts.comments > 0)
-  );
+  ));
 
   // Hide "Imported" category from display
   const displayCategory = category?.title && !/^imported$/i.test(category.title) ? category.title : null;
