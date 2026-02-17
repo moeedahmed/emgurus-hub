@@ -338,14 +338,14 @@ export default function BlogDetail() {
       <article className="w-full mx-auto px-2.5 sm:px-6 lg:px-8 max-w-3xl lg:max-w-5xl">
         <div className="rounded-2xl border border-border/60 bg-card/20 p-3 sm:p-5 lg:p-7 overflow-hidden">
           <style>{`
-            .blog-content { font-family: inherit; line-height: 1.65; color: hsl(var(--foreground)); font-size: 0.92rem; overflow-wrap: break-word; word-break: break-word; }
-            @media (min-width: 640px) { .blog-content { font-size: 1.025rem; line-height: 1.8; } }
-            .blog-content h1 { font-size: 1.7rem; font-weight: 700; margin: 1.5rem 0 0.75rem; letter-spacing: -0.01em; font-family: inherit !important; }
-            .blog-content h2 { font-size: 1.4rem; font-weight: 650; margin: 1.3rem 0 0.6rem; letter-spacing: -0.01em; color: hsl(var(--foreground)); font-family: inherit !important; }
-            .blog-content h3 { font-size: 1.15rem; font-weight: 600; margin: 1.1rem 0 0.4rem; color: hsl(var(--primary)); text-wrap: balance; font-family: inherit !important; }
-            .blog-content p { margin-bottom: 0.75rem; font-family: inherit !important; }
-            .blog-content ul, .blog-content ol { padding-left: 1.25rem; margin-bottom: 0.75rem; }
-            .blog-content li { margin-bottom: 0.3rem; }
+            .blog-content { font-family: inherit; line-height: 1.6; color: hsl(var(--foreground)); font-size: 0.875rem; overflow-wrap: break-word; word-break: break-word; }
+            @media (min-width: 640px) { .blog-content { font-size: 0.925rem; line-height: 1.7; } }
+            .blog-content h1 { font-size: 1.25rem; font-weight: 700; margin: 1.25rem 0 0.5rem; letter-spacing: -0.01em; font-family: inherit !important; }
+            .blog-content h2 { font-size: 1.1rem; font-weight: 650; margin: 1rem 0 0.4rem; letter-spacing: -0.01em; color: hsl(var(--foreground)); font-family: inherit !important; }
+            .blog-content h3 { font-size: 1rem; font-weight: 600; margin: 0.85rem 0 0.3rem; color: hsl(var(--primary)); text-wrap: balance; font-family: inherit !important; }
+            .blog-content p { margin-bottom: 0.5rem; font-family: inherit !important; }
+            .blog-content ul, .blog-content ol { padding-left: 1.25rem; margin-bottom: 0.5rem; }
+            .blog-content li { margin-bottom: 0.2rem; }
             .blog-content img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5rem 0; }
             .blog-content a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
             .blog-content a:hover { opacity: 0.8; }
@@ -440,8 +440,8 @@ export default function BlogDetail() {
                           <span
                             className={cn(
                               "tracking-tight text-foreground/90 break-words",
-                              section.level === 2 && "text-[0.95rem] sm:text-[1.05rem] font-semibold",
-                              section.level === 3 && "text-[0.88rem] sm:text-[0.95rem] font-medium text-primary/80 pl-2 sm:pl-3"
+                              section.level === 2 && "text-sm sm:text-[0.95rem] font-semibold",
+                              section.level === 3 && "text-[0.8rem] sm:text-sm font-medium text-primary/80 pl-2 sm:pl-3"
                             )}
                           >
                             {section.title}
