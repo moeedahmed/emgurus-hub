@@ -95,9 +95,9 @@ export default function QuestionBankPage() {
     : items;
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6 max-w-full overflow-hidden">
       <Card>
-        <CardContent className="py-4 grid gap-3 md:grid-cols-6">
+        <CardContent className="py-4 grid gap-3 grid-cols-1 md:grid-cols-6">
           <div className="md:col-span-2"><Input placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
           <Select value={examId || "ALL"} onValueChange={(v) => { setExamId(v === "ALL" ? "" : v); setPage(1); }}>
             <SelectTrigger><SelectValue placeholder="Exam" /></SelectTrigger>
@@ -128,8 +128,8 @@ export default function QuestionBankPage() {
           filtered.map((q) => (
             <Card key={q.id} className="cursor-pointer hover:bg-accent/30" onClick={() => navigate(`/exam/question/${q.id}`)}>
               <CardHeader>
-                <CardTitle className="text-base flex items-center justify-between">
-                  <span className="truncate">{q.stem?.slice(0, 160) || 'Question'}</span>
+                <CardTitle className="text-base min-w-0">
+                  <span className="line-clamp-2">{q.stem?.slice(0, 160) || 'Question'}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
