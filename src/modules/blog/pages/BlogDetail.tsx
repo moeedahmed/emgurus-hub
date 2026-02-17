@@ -501,13 +501,13 @@ export default function BlogDetail() {
 
       {/* Action bar */}
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl mt-10">
-        <div className="flex items-center justify-between py-4 border-t border-b">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between py-4 border-t border-b gap-2 overflow-hidden">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
             <Button
               size="sm"
               variant="ghost"
               onClick={handleLike}
-              className={`gap-1.5 hover:text-primary ${userLiked ? "text-primary" : ""}`}
+              className={`gap-1.5 hover:text-primary px-2 sm:px-3 ${userLiked ? "text-primary" : ""}`}
             >
               <ThumbsUp className={`h-4 w-4 ${userLiked ? "fill-current" : ""}`} />
               {engagementCounts.likes > 0 ? engagementCounts.likes : "Like"}
@@ -516,13 +516,13 @@ export default function BlogDetail() {
               size="sm"
               variant="ghost"
               onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}
-              className="gap-1.5"
+              className="gap-1.5 px-2 sm:px-3"
             >
               <MessageCircle className="h-4 w-4" />
               {engagementCounts.comments > 0 ? engagementCounts.comments : "Comment"}
             </Button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <ShareButtons
               title={data.title}
               url={window.location.href}
@@ -533,7 +533,9 @@ export default function BlogDetail() {
                 setEngagementCounts(prev => ({ ...prev, shares: prev.shares + 1 }));
                 try { await trackShare(data.id, platform); } catch {}
               }}
-              variant="inline"
+              variant="dropdown"
+              size="sm"
+              buttonVariant="ghost"
             />
             <ReportIssueModal postId={data.id} postTitle={data.title} />
           </div>
