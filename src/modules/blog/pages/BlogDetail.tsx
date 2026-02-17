@@ -429,16 +429,19 @@ export default function BlogDetail() {
               )}
 
               {contentSections.sections.length > 0 ? (
-                <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-2.5">
+                <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-0 border-l-2 border-border/60 ml-1">
                   {contentSections.sections.map((section) => (
-                    <AccordionItem key={section.id} value={section.id} id={section.id} className="rounded-xl border border-border/60 px-2.5 sm:px-4 overflow-hidden">
-                      <div className="flex items-center gap-2">
-                        <AccordionTrigger className="text-left py-3.5 hover:no-underline">
+                    <AccordionItem key={section.id} value={section.id} id={section.id} className="border-b-0 border-none">
+                      <div className={cn(
+                        "flex items-center gap-1 -ml-[2px] border-l-2 transition-colors",
+                        activeSection === section.id ? "border-primary" : "border-transparent"
+                      )}>
+                        <AccordionTrigger className="text-left py-2 sm:py-2.5 pl-3 sm:pl-4 hover:no-underline flex-1 min-w-0">
                           <span
                             className={cn(
-                              "font-semibold tracking-tight text-foreground/95",
-                              section.level === 2 && "text-[1.08rem]",
-                              section.level === 3 && "text-[0.98rem] text-primary/90"
+                              "tracking-tight text-foreground/90 break-words",
+                              section.level === 2 && "text-[0.95rem] sm:text-[1.05rem] font-semibold",
+                              section.level === 3 && "text-[0.88rem] sm:text-[0.95rem] font-medium text-primary/80 pl-2 sm:pl-3"
                             )}
                           >
                             {section.title}
@@ -447,7 +450,7 @@ export default function BlogDetail() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          className="h-7 w-7 shrink-0 text-muted-foreground/50 hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -455,11 +458,11 @@ export default function BlogDetail() {
                           }}
                           aria-label={`Copy link to ${section.title}`}
                         >
-                          <Link2 className="h-4 w-4" />
+                          <Link2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                       <AccordionContent>
-                        <div className="blog-content pb-4" dangerouslySetInnerHTML={{ __html: section.html }} />
+                        <div className="blog-content pl-3 sm:pl-4 pb-3" dangerouslySetInnerHTML={{ __html: section.html }} />
                       </AccordionContent>
                     </AccordionItem>
                   ))}
